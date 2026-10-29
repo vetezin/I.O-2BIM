@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel de Suprimentos – Usina Alcar (dados fictícios)</title>
+<link rel="stylesheet" href="css/styles.css"><link rel="stylesheet" href="css/interface.css">
+</head>
+<body data-pagina="decisoes">
+
+<header class="topo">
+  <div class="wrap">
+    <div>
+      <h1>Painel de Suprimentos – Usina Alcar (dados fictícios)</h1>
+      <div class="sub">Sistema de Apoio à Decisão do almoxarifado · dados até 22/10/2026 · fonte: camada ouro simulada</div>
+    </div>
+    <div class="acoes">
+      <span class="pill" title="Todos os dados são simulados">● Dados fictícios</span>
+      <label>Perfil
+        <select id="perfil" aria-label="Perfil de acesso">
+          <option value="analista">Analista de almoxarifado/PCM</option>
+          <option value="compras">Setor de compras</option>
+          <option value="gestor">Gestor de suprimentos</option>
+        </select>
+      </label>
+      <button class="btn claro" id="bt-sobre">Governança e metodologia</button>
+    </div>
+  </div>
+<nav class="wrap navegacao" aria-label="Navegação principal"><a href="index.html" data-pagina="home">Home</a><a href="compras.html" data-pagina="compras">Compras</a><a href="decisoes.html" data-pagina="decisoes">Decisões</a></nav></header>
+
+<div class="filtros" role="region" aria-label="Filtros do painel">
+  <div class="wrap">
+    <div class="linha-filtros">
+      <div class="campo"><label for="f-fam">Tipo de item</label><select id="f-fam"></select></div>
+      <div class="campo"><label for="f-item">Item</label><input id="f-item" list="dl-itens" placeholder="Nome ou código" autocomplete="off"><datalist id="dl-itens"></datalist></div>
+      <div class="campo"><label for="f-forn">Fornecedor</label><select id="f-forn"></select></div>
+      <div class="campo"><label for="f-inicio">Data inicial (dd/mm/aaaa)</label><input id="f-inicio" type="date" required></div><div class="campo"><label for="f-fim">Data final (dd/mm/aaaa)</label><input id="f-fim" type="date" required></div>
+      <div class="campo"><label for="f-safra">Safra / entressafra</label>
+        <select id="f-safra">
+          <option value="">Safra e entressafra</option>
+          <option value="safra">Safra (abril a novembro)</option>
+          <option value="entre">Entressafra (jan. a mar.)</option>
+        </select></div>
+      <div class="campo"><label for="f-pad">Padrão de demanda</label>
+        <select id="f-pad">
+          <option value="">Todos</option><option>regular</option><option>intermitente</option><option>muito intermitente</option><option>sazonal</option>
+        </select></div>
+      <div class="campo"><label for="f-abc">Curva ABC</label>
+        <select id="f-abc"><option value="">Todas</option><option>A</option><option>B</option><option>C</option></select></div>
+    </div>
+    <div class="resumo-filtros">
+      <span id="res-filtros" class="num" aria-live="polite"></span>
+      <label class="nivel" title="Simulação: altera z do estoque de segurança e recalcula pontos de pedido e riscos">Nível de serviço alvo
+        <input type="range" id="f-nivel" min="85" max="99.5" step="0.5" value="95" aria-label="Nível de serviço alvo"><b id="v-nivel" class="num">95%</b>
+      </label>
+      <button class="btn peq" id="bt-limpar">Limpar filtros</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="aviso"><b>Protótipo v1.</b> Empresa, itens, fornecedores e tabelas são fictícios. O efeito do clima e da safra no consumo é uma hipótese embutida na simulação e não comprova nada sobre a usina. Os seis indicadores abaixo são provisórios, até a Matriz de Indicadores de 06/11.</div>
+
+  <section data-vista="home" class="kpis" id="kpis" aria-label="Indicadores"></section>
+
+  <section data-vista="home" class="cartao resumo-compras"><h2>Compras sugeridas</h2><p id="resumo-compras"></p><a class="btn pri" href="compras.html">Ver itens das compras sugeridas</a></section><div class="grade">
+    <section data-vista="home" class="cartao c-8" aria-labelledby="t1">
+      <div class="cab">
+        <h2 id="t1"><span class="n">1</span>Consumo real × previsto, por semana</h2>
+        <div class="ferr">
+          <div class="seg" role="group" aria-label="Unidade"><button data-m="un" aria-pressed="true">Unidades</button><button data-m="rs" aria-pressed="false">R$</button></div>
+          <button class="btn peq" id="bt-excel">Exportar Excel</button><button class="btn peq" id="tb-main">Ver tabela</button>
+        </div>
+      </div>
+      <div class="leg" id="leg-main"></div>
+      <div class="chart" id="ch-main"></div>
+      <p class="nota" id="nt-main"></p>
+    </section>
+
+    <section data-vista="home" class="cartao c-4 dest clima" aria-labelledby="t2">
+      <div class="cab" style="justify-content:space-between">
+        <h2 id="t2"><span class="n">2</span>Cenário climático</h2>
+        <button class="btn peq" id="bt-mapa" aria-pressed="false">Ver mapa</button><select id="sel-clima" aria-label="Semana de referência do cenário"></select>
+      </div>
+      <div id="clima-corpo"></div>
+    </section>
+
+    <section data-vista="home" class="cartao c-12" aria-labelledby="t3">
+      <div class="cab">
+        <h2 id="t3"><span class="n">3</span>Risco de ruptura por item</h2>
+        <button class="btn peq" data-recolher="risco-conteudo" aria-expanded="true" aria-controls="risco-conteudo">Recolher</button><div class="ferr" id="chips-risco" role="group" aria-label="Filtro por risco"></div>
+      </div>
+      <div id="risco-conteudo"><p class="nota" style="margin:0 0 6px">Situação em 22/10/2026. Não depende do período escolhido. Clique em um item para ver o cálculo.</p>
+      <div class="rolar" style="max-height:470px;overflow:auto"><table id="tb-risco"></table></div>
+      <div style="margin-top:8px"><button class="btn peq" id="bt-mais">Mostrar mais</button> <span class="nota" id="nt-risco"></span></div>
+    </div></section>
+
+    <section data-vista="compras" class="cartao c-12" aria-labelledby="t4">
+      <div class="cab"><h2 id="t4"><span class="n">4</span>Compras sugeridas</h2><span class="nota" id="nt-compras"></span></div>
+      <div id="compras-corpo"></div>
+    </section>
+
+    <section data-vista="home" class="cartao c-12" aria-labelledby="t5">
+      <div class="cab"><h2 id="t5"><span class="n">5</span>Benchmarking e tendências</h2><button class="btn peq" data-recolher="bench-conteudo" aria-expanded="true" aria-controls="bench-conteudo">Recolher</button><span class="nota">Referências setoriais fictícias, a validar na Matriz de Indicadores.</span></div>
+      <div id="bench-conteudo"><div class="abas" role="tablist" id="abas">
+        <button role="tab" data-t="forn" aria-selected="true">Fornecedores</button>
+        <button role="tab" data-t="rup" aria-selected="false">Ruptura vs. referência</button>
+        <button role="tab" data-t="prev" aria-selected="false">Métodos de previsão</button>
+      </div>
+      <div id="bench-corpo"></div></div>
+    </section>
+
+    <dialog id="dg-agente" aria-labelledby="t6"><div class="dc"><button class="btn peq fecha" id="fx-agente">Fechar (Esc)</button>
+      <div class="cab"><h2 id="t6"><span class="n">6</span>Agente de IA de consulta</h2></div>
+      <p class="nota" style="margin:0 0 6px">No protótipo, as respostas vêm de regras locais. No sistema, o acervo (RAG) responde às perguntas conceituais e funções somente leitura consultam a camada ouro.</p>
+      <div class="chat" id="chat" aria-live="polite" tabindex="0"></div>
+      <form class="form-chat" id="form-chat"><input id="q" aria-label="Pergunta ao agente" placeholder="Pergunte, por exemplo: como calcular o estoque de segurança?" autocomplete="off"><button class="btn pri" type="submit">Enviar</button></form>
+      <div class="sugs" id="sugs"></div></div></dialog>
+
+    <section data-vista="decisoes" class="cartao c-12" aria-labelledby="t7">
+      <div class="cab"><h2 id="t7"><span class="n">7</span>Registro das decisões</h2>
+        <div class="ferr"><button class="btn peq" id="bt-csv">Exportar CSV</button><button class="btn peq" id="bt-zerar">Limpar</button></div></div>
+      <p class="nota">Os filtros de item são compartilhados com a Home. As datas selecionam semanas de consumo; compras e decisões mostram a situação atual dos itens, inclusive decisões feitas hoje.</p><p class="nota" style="margin:0 0 6px">Cada aceite, recusa ou aprovação grava a justificativa. É o registro que externaliza o conhecimento do analista (etapa de externalização do SECI).</p>
+      <div style="max-height:360px;overflow:auto"><table id="tb-log"></table></div>
+    </section>
+  </div>
+  <footer>Protótipo v1 · Projeto Integrador de Inteligência Organizacional · Usina Alcar é uma empresa fictícia · gerado com semente fixa, reprodutível.</footer>
+</main>
+
+<dialog id="dg-item" class="gaveta" aria-label="Detalhe do item"><div class="dc" id="dg-item-c"></div></dialog>
+<dialog id="dg-sobre" aria-label="Governança e metodologia"><div class="dc" id="dg-sobre-c"></div></dialog>
+<button class="btn pri agente-abrir" id="bt-agente" aria-haspopup="dialog" aria-controls="dg-agente">Consultar agente de IA</button><div class="toast" id="toast" role="status"></div>
+
+<script src="js/dados.js"></script>
+<script src="js/app.js"></script><script src="js/interface.js"></script>
+</body>
+</html>

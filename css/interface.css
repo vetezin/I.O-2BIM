@@ -1,0 +1,12 @@
+.navegacao{display:flex;gap:8px;padding-bottom:12px}
+.navegacao a{color:white;text-decoration:none;padding:8px 16px;border-radius:8px;font-weight:600}
+.navegacao a:hover,.navegacao a[aria-current]{background:white;color:var(--oliva)}
+.resumo-compras{margin:16px 0;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.resumo-compras h2,.resumo-compras p{margin:0}
+a.btn{display:inline-block;text-decoration:none}
+.agente-abrir{position:fixed;bottom:22px;right:22px;z-index:20;box-shadow:0 4px 18px #080f0f33;padding:12px 18px}
+.mapa{margin:0}.mapa svg{width:100%;display:block}.mapa figcaption{margin-top:8px}
+#dg-agente{width:min(760px,95vw)}#dg-agente .chat{height:min(45vh,420px)}
+body{padding-bottom:65px}.campo input[type=date]{max-width:100%;min-width:145px}
+body[data-pagina=compras] .lista-compras{max-height:none}
+@media(max-width:600px){.navegacao{justify-content:center}.filtros{position:static}.resumo-compras{display:block}.resumo-compras p{margin:10px 0}.agente-abrir{bottom:12px;right:12px}.cab{flex-wrap:wrap}}

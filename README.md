@@ -2,6 +2,19 @@
 
 Protótipo acadêmico com dados fictícios. HTML, CSS, JavaScript e base simulada separados, sem dependências para executar o painel.
 
+## Nova aba Dashboard
+
+Abra `dashboard.html` pelo menu. A aba usa exclusivamente `dashboard/dados_alcar.json` do contrato DW, com seis painéis, filtros conforme a matriz do guia, exportação CSV, visão tabular, simulação de nível de serviço e decisões persistidas localmente. Home, Compras e Decisões preservam o protótipo anterior.
+
+Especificação em `docs/dashboard/GUIA_DASHBOARD_SAD.md`; resultados, limitações do contrato e respostas às perguntas finais em `docs/dashboard/VALIDACAO.md`.
+
+Testes adicionais:
+
+```sh
+node --test tests/dashboard.test.cjs
+node tests/dashboard.smoke.cjs
+```
+
 ## Executar
 
 Com Node.js instalado, execute na pasta do projeto:

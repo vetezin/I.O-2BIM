@@ -6,11 +6,11 @@ const server = http.createServer(async (req, res) => {
   try {
     const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
     const file = path.resolve(root, '.' + (pathname === '/' ? '/index.html' : pathname));
-    if (!file.startsWith(root + path.sep) || !['.html', '.css', '.js'].includes(path.extname(file))) {
+    if (!file.startsWith(root + path.sep) || !['.html', '.css', '.js', '.mjs', '.json'].includes(path.extname(file))) {
       res.writeHead(403); res.end('Acesso negado'); return;
     }
     const contents = await fs.readFile(file);
-    res.setHeader('Content-Type', {'.html':'text/html; charset=utf-8', '.css':'text/css; charset=utf-8', '.js':'text/javascript; charset=utf-8'}[path.extname(file)]);
+    res.setHeader('Content-Type', {'.html':'text/html; charset=utf-8', '.css':'text/css; charset=utf-8', '.js':'text/javascript; charset=utf-8', '.mjs':'text/javascript; charset=utf-8', '.json':'application/json; charset=utf-8'}[path.extname(file)]);
     res.end(contents);
   } catch { res.writeHead(404); res.end('Arquivo não encontrado'); }
 });

@@ -5,6 +5,20 @@ let D,F,items,decisions=[],memoryOnly=false,lastFocus=null;
 const $=s=>document.querySelector(s);
 const storage=()=>{try{return window.localStorage;}catch{return undefined;}};
 const sel=(id,label,options,value)=>`<label for="${id}">${label}<select id="${id}">${options.map(([v,l])=>`<option value="${core.esc(v)}" ${String(v)===String(value)?'selected':''}>${core.esc(l)}</option>`).join('')}</select></label>`;
+function focusSelector(el=document.activeElement) {
+  if(!el?.closest('#dashboard,#filters'))return null;
+  if(el.id)return '#'+CSS.escape(el.id);
+  const attrs=['data-table','data-csv','data-fam','data-ind','data-detail','data-decision','data-cod','data-page'].filter(k=>el.hasAttribute(k));
+  if(!attrs.length)return null;
+  const graph=el.closest('[data-graph]');
+  return (graph?'#'+CSS.escape(graph.id)+' ':'')+attrs.map(k=>`[${k}="${CSS.escape(el.getAttribute(k))}"]`).join('');
+}
+function restoreFocus(selector) {
+  if(!selector)return;
+  let target=$(selector);
+  if(target?.disabled&&target.hasAttribute('data-page'))target=$('#g33 [data-page]:not(:disabled)')||$('#g33 [data-detail]');
+  target?.focus({preventScroll:true});
+}
 function fromHash() {
   const params=new URLSearchParams(location.hash.slice(1)),base=core.defaults(D);
   const choices={fam:['TOTAL',...D.familias.map(f=>f.id)],janela:['ATUAL','ANTERIOR','ANO'],agricola:['','safra','entre'],forn:['',...D.fornecedores.map(f=>f.id)],abc:['','A','B','C'],risco:['','crítico','atenção','sem risco'],padrao:['','suave','intermitente'],indicador:D.indicadores.map(i=>i.codigo)};
@@ -13,9 +27,12 @@ function fromHash() {
   return base;
 }
 function filters() {
+  const focus=focusSelector();
   $('#filters').innerHTML=`<div class="wrap"><div class="filter-grid">${sel('fam','Família',[['TOTAL','Todas (empresa)'],...D.familias.map(f=>[f.id,f.nome])],F.fam)}${sel('janela','Janela',[['ATUAL',`Atual (${D.meta.parametros.janela_semanas} semanas)`],['ANTERIOR',`Anterior (${D.meta.parametros.janela_semanas} semanas)`],['ANO',`Ano (${D.semanas.length} semanas)`]],F.janela)}${sel('agricola','Período agrícola',[['','Todos'],['safra','Safra'],['entre','Entressafra']],F.agricola)}${sel('forn','Fornecedor',[['','Todos'],...D.fornecedores.map(f=>[f.id,f.nome])],F.forn)}${sel('abc','Curva ABC',[['','Todas'],['A','A'],['B','B'],['C','C']],F.abc)}${sel('risco','Risco',[['','Todos'],['crítico','◆ crítico'],['atenção','▲ atenção'],['sem risco','● sem risco']],F.risco)}${sel('padrao','Padrão de demanda',[['','Todos'],['suave','Suave'],['intermitente','Intermitente']],F.padrao)}<label for="nivel">Nível de serviço (what-if): <output id="nivel-value">${core.num(F.nivel)}%</output><input id="nivel" type="range" min="90" max="99.5" step="0.5" value="${F.nivel}"></label></div><div class="filter-bottom"><button id="reset">Limpar filtros</button><span id="filter-summary">${core.weeks(D,F).length} semanas · posição ${core.date(D.meta.data_posicao)} · <a href="#painel-1">Voltar aos indicadores</a></span>${sel('perfil','Perfil da decisão',[['analista','Analista'],['compras','Compras'],['gestor','Gestor']],F.perfil)}</div></div>`;
+  restoreFocus(focus);
 }
 function render() {
+  const focus=focusSelector();
   items=core.simulate(D,F.nivel);
   const views=[['p1',1],['p5',5],['p3',3],['p2',2],['p4',4],['p6',6]].filter(([name])=>typeof panels[name]==='function');
   $('#dashboard').innerHTML=`<p class="notice">${core.esc(D.meta.aviso)} Os indicadores desta aba vêm do contrato do DW, versão ${core.esc(D.meta.versao_contrato)}. As telas anteriores preservam o protótipo original.</p><nav class="panel-nav" aria-label="Painéis do dashboard">${views.map(([,n])=>`<a href="#painel-${n}">Painel ${n}</a>`).join('')}</nav>${views.map(([name])=>panels[name](D,F,decisions,items)).join('')}${decisionHistory()}`;
@@ -23,6 +40,7 @@ function render() {
   history.replaceState(null,'','#'+params);
   $('#filter-summary').innerHTML=`${core.weeks(D,F).length} semanas · posição ${core.date(D.meta.data_posicao)} · <a href="#painel-1">Voltar aos indicadores</a>`;
   if(memoryOnly)$('#message').textContent='Armazenamento indisponível: decisões mantidas em memória nesta aba.';
+  restoreFocus(focus);
 }
 function decisionHistory() {
   const headers=['Código','Data da sugestão','Data da decisão','Qtd. sugerida','Qtd. decidida','Decisão','Perfil','Justificativa','No prazo'];

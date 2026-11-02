@@ -21,7 +21,7 @@ Nova página `dashboard.html`, com seis painéis, implementada com a ordem de pr
 
 ## Evidências
 
-- `node --test tests/dashboard.test.cjs`: três testes aprovados — contrato/seis KPIs/janelas, política 23 críticos + 13 em atenção e decisões/prazos/CSV/média móvel.
+- `node --test tests/dashboard.test.cjs`: seis testes aprovados — contrato/seis KPIs/janelas, política 23 críticos + 13 em atenção, decisões/prazos/CSV/média móvel, proporção das barras por quantidade de itens, identificação das linhas e títulos derivados dos dados.
 - `node tests/dashboard.smoke.cjs`: aprovado no Chrome com Playwright. Verifica seis painéis; seis valores oficiais; OTIF com tolerância e clima; uma única carga do JSON e ausência de chamadas externas; ausência de erros/avisos no console; larguras 390/820/1366 sem overflow da página; filtros e destaques; alinhamento entre chuva/consumo; tabelas de todos os gráficos; CSVs; ajuste de compra; persistência após recarga; gaveta/Escape; armazenamento bloqueado e contrato inválido.
 - `node tests/smoke.cjs`: regressão das páginas anteriores aprovada.
 - `node --check dashboard/*.mjs` individualmente e `git diff --check`: aprovados.
@@ -39,3 +39,13 @@ Para executar os testes de navegador é necessário Playwright e um navegador pr
 - **Semanas de clima:** a semana parcial final é exibida junto à janela atual e ambas as parciais aparecem em Ano. Não se estima consumo onde o contrato não fornece histórico.
 
 O ETL não foi executado nem modificado: foi usado o contrato entregue, sem recalcular ou substituir a base. Não foram adicionados API meteorológica, recebimento físico de estoque ou backend.
+
+## Correções de aderência ao guia
+
+- Foco do teclado preservado após paginação, seleção de indicador/família e confirmação de decisão. Ao chegar à última página, o foco segue para um controle de paginação disponível.
+- G3.1 representa quantidades absolutas: famílias com mais itens têm barras maiores. O percentual crítico e sua meta ficam em uma coluna separada, sem misturar quantidade com percentual.
+- Linhas identificadas diretamente no gráfico, com marcadores iguais aos da legenda.
+- Títulos de benchmarking, consumo do item e clima apresentam conclusões calculadas a partir dos dados existentes.
+- Testes de navegador ampliados para reproduzir os problemas de foco e verificar as correções, além das três larguras exigidas. Revisão independente do diff e inspeção visual dos painéis 2, 3 e 4 concluídas sem achados relevantes.
+
+Estas correções não alteram o contrato JSON, os cálculos dos indicadores, os pacotes de dados/ETL ou as outras abas.

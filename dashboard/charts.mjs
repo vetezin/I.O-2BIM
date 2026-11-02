@@ -1,8 +1,9 @@
 import {esc,num,date} from './core.mjs';
 export const C={oliva:'var(--oliva)',claro:'var(--oliva-claro)',cinza:'var(--cinza)',tinta:'var(--tinta)',borda:'var(--borda)',crit:'var(--crit)',aten:'var(--aten)',petroleo:'var(--petroleo)',salvia:'var(--salvia)',terra:'var(--terra)'};
 const tip = s => `tabindex="0" data-tip="${esc(s)}"`;
-const svg = (w,h,body,label) => `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(label)}">${body}</svg>`;
+const svg = (w,h,body,label) => `<svg viewBox="0 0 ${w} ${h}" style="min-width:${w}px" role="img" aria-label="${esc(label)}">${body}</svg>`;
 const text = (x,y,s,attrs='') => `<text x="${x}" y="${y}" ${attrs}>${esc(s)}</text>`;
+const seriesMarker = s => s.name==='TOTAL'?'○':s.color===C.petroleo?'■':s.color===C.terra?'▲':'●';
 export function table(headers,rows) {return `<div class="table-scroll"><table><thead><tr>${headers.map(h=>`<th scope="col">${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;}
 export function graph(id,title,headers,rows,viz,note='',scope='') {
   return `<article class="graph" id="${id}" data-graph><div class="graph-head"><h3>${esc(title)}</h3><div class="tools"><button type="button" data-table="${id}" aria-controls="${id}-table" aria-expanded="false">Ver como tabela</button><button type="button" data-csv="${id}">Exportar CSV</button></div></div>${scope?`<p class="scope">${esc(scope)}</p>`:''}
@@ -19,17 +20,29 @@ export function line(labels,series,{meta=null,height=255,zero=false,shade=[],war
   for(let j=0;j<5;j++){const v=lo+(hi-lo)*j/4;body+=`<path d="M${l} ${y(v)}H${w-r}" stroke="${C.borda}"/>`+text(l-7,y(v)+4,num(v),'text-anchor="end"');}
   if(meta!=null)body+=`<path d="M${l} ${y(meta)}H${w-r}" stroke="${C.tinta}" stroke-dasharray="4 3"/>`+text(w-r,y(meta)-5,'meta '+num(meta),'text-anchor="end"');
   if(bars)bars.forEach((v,k)=>{if(v!=null)body+=`<rect x="${x(k)-3}" y="${y(v)}" width="6" height="${Math.max(0,y(0)-y(v))}" fill="${C.borda}"/>`;});
-  series.forEach((s,j)=>{
+  const annotations=[];
+  series.forEach(s=>{
     let d='';s.values.forEach((v,k)=>{if(v==null){d+=' ';return;} d+=(k===0||s.values[k-1]==null?'M':'L')+x(k)+','+y(v)+' ';});
     body+=`<path d="${d.trim()}" stroke="${s.color||C.oliva}" stroke-width="2" fill="none" ${s.dash?'stroke-dasharray="6 4"':''}/>`;
     s.values.forEach((v,k)=>{if(v==null)return;const label=`${labels[k]} · ${s.name}: ${num(v)}${extra[k]?' · '+extra[k]:''}`; const attrs=tip(label);
-      body+=j===2?`<path d="M${x(k)} ${y(v)-4}l4 7h-8z" fill="${s.color||C.terra}" ${attrs}/>`:j===1&&!s.dash?`<rect x="${x(k)-3}" y="${y(v)-3}" width="6" height="6" fill="${s.color||C.petroleo}" ${attrs}/>`:`<circle cx="${x(k)}" cy="${y(v)}" r="3" fill="${s.dash?'var(--branco)':s.color||C.oliva}" stroke="${s.color||C.oliva}" ${attrs}/>`;
+      const marker=seriesMarker(s);
+      body+=marker==='▲'?`<path d="M${x(k)} ${y(v)-4}l4 7h-8z" fill="${s.color||C.terra}" ${attrs}/>`:marker==='■'?`<rect x="${x(k)-3}" y="${y(v)-3}" width="6" height="6" fill="${s.color||C.petroleo}" ${attrs}/>`:`<circle cx="${x(k)}" cy="${y(v)}" r="3" fill="${marker==='○'?'var(--branco)':s.color||C.oliva}" stroke="${s.color||C.oliva}" ${attrs}/>`;
     });
+    const k=s.values.findLastIndex(v=>v!=null&&Number.isFinite(v));
+    if(k>=0)annotations.push({s,k,desired:y(s.values[k])-10});
   });
+  let last=t-16;
+  annotations.sort((a,b)=>a.desired-b.desired).forEach(a=>{a.labelY=Math.max(t+12,a.desired,last+18);last=a.labelY;});
+  const overflow=Math.max(0,last-(h-b-8));
+  for(const a of annotations){
+    const label=seriesMarker(a.s)+' '+a.s.name,labelY=a.labelY-overflow,labelX=w-r-6;
+    const width=Math.min(iw,label.length*7+12);
+    body+=`<path d="M${x(a.k)} ${y(a.s.values[a.k])}L${labelX} ${labelY}" stroke="${a.s.color||C.oliva}" fill="none"/><rect x="${labelX-width}" y="${labelY-12}" width="${width}" height="16" fill="var(--branco)" fill-opacity=".9"/>`+text(labelX,labelY,label,'text-anchor="end"');
+  }
   labels.forEach((s,k)=>{if(k%Math.max(1,Math.ceil(labels.length/7))===0)body+=text(x(k),h-12,s,`text-anchor="${k===0?'start':k===labels.length-1?'end':'middle'}"`);if(rupture[k])body+=`<path d="M${x(k)} ${h-b+2}l5 9h-10z" fill="${C.crit}" ${tip(s+' · ruptura')}/>`;
     if(sync)body+=`<rect x="${x(k)-iw/Math.max(labels.length,1)/2}" y="${t}" width="${iw/Math.max(labels.length,1)}" height="${ih}" fill="transparent" data-sync="${sync}" data-index="${k}" ${tip(s+' · '+series.map(s=>s.name+': '+num(s.values[k])).join(' · '))}/>`;
   });
-  const legend=series.map((s,j)=>`<span><i style="border-color:${s.color||C.oliva};border-style:${s.dash?'dashed':'solid'}"></i>${['●','○','▲'][j]} ${esc(s.name)}</span>`).join('');
+  const legend=series.map(s=>`<span><i style="border-color:${s.color||C.oliva};border-style:${s.dash?'dashed':'solid'}"></i>${seriesMarker(s)} ${esc(s.name)}</span>`).join('');
   return `<div class="legend">${bars?'<span>▥ Real</span>':''}${legend}${warming.some(Boolean)?'<span>▧ aquecimento do modelo</span>':''}${rupture.some(Boolean)?'<span>▲ ruptura</span>':''}</div>${!zero?'<p class="axis-note">eixo vertical não começa em zero</p>':''}${svg(w,h,body,series.map(s=>s.name).join(' × '))}`;
 }
 export function bars(rows,{max=null,meta=null,diverging=false,format=v=>num(v),click=false}={}) {
@@ -86,12 +99,12 @@ export function rain(rows,sync) {
   return '<p class="legend">■ chuvoso (petróleo) · ■ seco (terra) · ■ normal (cinza) · □ parcial</p>'+svg(w,h,body,'Chuva semanal com semanas parciais vazadas');
 }
 export function stacked(rows,meta) {
-  const w=720,left=235,iw=360,h=rows.length*43+48;
-  let body=`<path d="M${left+iw*meta/100} 10V${h-28}" stroke="${C.tinta}" stroke-dasharray="4 3"/>`+text(left,h-8,'Escala: percentual do catálogo; meta críticos '+num(meta,0)+'%');
-  rows.forEach((r,k)=>{let x=left;const y=k*43+15;body+=`<g data-fam="${esc(r.familia)}" role="button" ${r.highlight?'class="selected" data-selected="true"':''} ${tip(r.label+' · '+r.itens_criticos+' críticos · '+r.itens_atencao+' atenção · '+r.itens_sem_risco+' sem risco')}>${text(left-10,y+15,(r.highlight?'● ':'')+r.label.slice(0,29),'text-anchor="end"')}`;
-    for(const [field,color] of [['itens_criticos',C.crit],['itens_atencao',C.aten],['itens_sem_risco',C.claro]]){const width=r.itens?r[field]/r.itens*iw:0;body+=`<rect x="${x}" y="${y}" width="${width}" height="23" fill="${color}" stroke="${field==='itens_sem_risco'?C.oliva:color}"/>`;x+=width;}
-    body+=text(left+iw+10,y+15,num(r.criticos_pct)+'% ◆')+'</g>';});
-  return '<p class="legend">◆ crítico · ▲ atenção · ● sem risco</p>'+svg(w,h,body,'Composição percentual do risco por família');
+  const w=850,left=235,iw=320,pctLeft=665,pctWidth=95,h=rows.length*43+78,maxItems=Math.max(1,...rows.map(r=>r.itens));
+  let body=text(left,16,'Itens (quantidade)')+text(pctLeft,16,'Críticos (%)')+`<path d="M${pctLeft+pctWidth*meta/100} 25V${h-30}" stroke="${C.tinta}" stroke-dasharray="4 3"/>`+text(pctLeft,h-8,'meta críticos '+num(meta,0)+'%');
+  rows.forEach((r,k)=>{let x=left;const y=k*43+32;body+=`<g data-fam="${esc(r.familia)}" role="button" ${r.highlight?'class="selected" data-selected="true"':''} ${tip(r.label+' · '+r.itens+' itens · '+r.itens_criticos+' críticos · '+r.itens_atencao+' atenção · '+r.itens_sem_risco+' sem risco')}>${text(left-10,y+15,(r.highlight?'● ':'')+r.label.slice(0,29),'text-anchor="end"')}`;
+    for(const [field,color] of [['itens_criticos',C.crit],['itens_atencao',C.aten],['itens_sem_risco',C.claro]]){const width=r[field]/maxItems*iw;body+=`<rect x="${x}" y="${y}" width="${width}" height="23" fill="${color}" stroke="${field==='itens_sem_risco'?C.oliva:color}"/>`;x+=width;}
+    body+=text(x+8,y+15,r.itens+' itens')+`<circle cx="${pctLeft+pctWidth*r.criticos_pct/100}" cy="${y+11}" r="4" fill="${r.criticos_pct>meta?C.crit:C.oliva}"/>`+text(pctLeft+pctWidth+8,y+15,num(r.criticos_pct)+'% ◆')+'</g>';});
+  return '<p class="legend">◆ crítico · ▲ atenção · ● sem risco. Barras: total de itens; coluna à direita: percentual crítico e meta.</p>'+svg(w,h,body,'Quantidade de itens e composição do risco por família; percentual crítico em escala separada');
 }
 export function coverage(rows,min,max) {
   const maxCapital=Math.max(1,...rows.map(r=>r.capital_imobilizado)),w=850,left=235,range=320,covLeft=620,covRange=130,covMax=Math.max(max*1.5,...rows.map(r=>r.cobertura_dias||0)),h=rows.length*45+40;

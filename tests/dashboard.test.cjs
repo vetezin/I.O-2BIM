@@ -32,3 +32,30 @@ test('decisão valida justificativa, quantidade e prazo; CSV neutraliza fórmula
   assert.match(c.csv(['texto'],[['=1+1']]),/'=1\+1/);
   assert.deepEqual(c.moving([null,10,null,30],4),[null,10,null,20]);
 });
+test('gráfico de risco representa a quantidade total das famílias',async()=>{
+  const {D}=await load(),{stacked}=await import('../dashboard/charts.mjs');
+  const rows=D.estoque_familia.filter(r=>r.familia!=='TOTAL').map(r=>({...r,label:r.familia}));
+  const html=stacked(rows,5);
+  const width=id=>{
+    const group=html.match(new RegExp(`<g data-fam="${id}"[^>]*>(.*?)</g>`,'s'))[1];
+    return [...group.matchAll(/<rect[^>]*width="([^"]+)"/g)].reduce((s,r)=>s+Number(r[1]),0);
+  };
+  assert.ok(Math.abs(width('LUB')/width('ROL')-18/30)<1e-9,'famílias de18 e30 itens devem ter larguras proporcionais');
+  assert.match(html,/18 itens/);assert.match(html,/30 itens/);assert.match(html,/meta críticos 5%/);
+});
+test('linhas têm identificação direta e marcadores coerentes com a legenda',async()=>{
+  const {line,C}=await import('../dashboard/charts.mjs');
+  const html=line(['a','b'],[{name:'Família',values:[3,4],color:C.oliva},{name:'TOTAL',values:[3,5],color:C.cinza,dash:true},{name:'Média móvel',values:[3,4.5],color:C.petroleo,dash:true}]);
+  assert.match(html,/<text[^>]*>● Família<\/text>/);
+  assert.match(html,/<text[^>]*>○ TOTAL<\/text>/);
+  assert.match(html,/<text[^>]*>■ Média móvel<\/text>/);
+  assert.match(html,/<rect[^>]*data-tip="[^"]*Média móvel/);
+});
+test('títulos expressam conclusões derivadas dos dados',async()=>{
+  const {D,core:c}=await load(),p=await import('../dashboard/paineis.mjs'),f=c.defaults(D);
+  const p5=p.p5(D,f),p6=p.p6(D,f);
+  const outside=D.kpi_resumo.filter(r=>r.familia!=='TOTAL'&&r.valor_atual!=null&&!r.dentro_da_meta).length;
+  assert.ok(p5.includes(`${outside} de ${D.familias.length*D.indicadores.length} resultados das famílias estão fora da meta`));
+  assert.match(p5,/maior vantagem sobre a empresa/);
+  assert.match(p6,/maior chuva do recorte/);assert.match(p6,/Pico de consumo/);assert.match(p6,/Maior consumo médio por item/);
+});

@@ -44,8 +44,22 @@ function prepararControles() {
     b.setAttribute('aria-label', `${el.hidden ? 'Expandir' : 'Recolher'} ${b.dataset.titulo}`);
     if (!el.hidden) render();
   }));
-  $('#bt-agente').onclick = () => { $('#dg-agente').showModal(); $('#q').focus(); };
-  $('#fx-agente').onclick = () => $('#dg-agente').close();
+  const consulta = $('#dg-agente'), abrirConsulta = $('#bt-agente');
+  const fecharConsulta = () => {
+    consulta.hidden = true;
+    abrirConsulta.setAttribute('aria-expanded', 'false');
+    abrirConsulta.focus();
+  };
+  abrirConsulta.onclick = () => {
+    if (!consulta.hidden) { fecharConsulta(); return; }
+    consulta.hidden = false;
+    abrirConsulta.setAttribute('aria-expanded', 'true');
+    $('#q').focus();
+  };
+  $('#fx-agente').onclick = fecharConsulta;
+  consulta.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { e.preventDefault(); fecharConsulta(); }
+  });
   $('#bt-mapa').onclick = () => {
     S.mapa = !S.mapa; $('#bt-mapa').setAttribute('aria-pressed', String(S.mapa));
     $('#bt-mapa').textContent = S.mapa ? 'Ver card' : 'Ver mapa'; renderClima();

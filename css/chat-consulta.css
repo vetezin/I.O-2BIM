@@ -1,0 +1,13 @@
+#dg-agente{position:fixed;bottom:76px;right:22px;z-index:40;width:min(460px,calc(100vw - 32px));height:min(620px,70dvh);max-height:calc(100dvh - 100px);background:var(--branco);border:1px solid var(--borda);border-radius:16px;box-shadow:0 12px 36px #080f0f33}
+#dg-agente .dc{display:flex;flex-direction:column;gap:8px;height:100%;min-height:0;padding:16px;overflow:auto}
+#dg-agente .fecha{position:absolute;top:16px;right:16px;float:none}
+#dg-agente .cab{padding-right:64px;margin:0}
+#dg-agente h2{display:flex;align-items:center;gap:8px;font-size:16px;margin:0}
+#dg-agente .nota{font-size:12px}
+#dg-agente .chat{flex:1 1 auto;height:auto;min-height:100px;max-height:none;overflow:auto;overflow-wrap:anywhere}
+#dg-agente .form-chat{flex-shrink:0;margin:0}
+#dg-agente .form-chat input{min-width:0;width:100%;padding:9px}
+#dg-agente .sugs{flex-shrink:0;margin:0}
+#dg-agente .sugs button{white-space:normal;text-align:left}
+@media(max-width:600px){#dg-agente{bottom:66px;right:12px;width:calc(100vw - 24px);max-height:calc(100dvh - 84px)}#dg-agente .dc{padding:12px}#dg-agente .fecha{top:12px;right:12px}}
+@media print{#dg-agente{display:none}}

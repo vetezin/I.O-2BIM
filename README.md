@@ -33,8 +33,12 @@ O servidor precisa permanecer em execução durante o uso. O Dashboard mostra um
 - Os seis indicadores da Home têm botão de informação com significado e fórmula. As explicações abrem por mouse, teclado ou toque; Escape fecha.
 - Compras possui filtro de criticidade (Crítico/Atenção), preservado na navegação e recarga e removido por Limpar filtros.
 - O cabeçalho acompanha a rolagem nas quatro telas; a posição dos filtros considera a altura real do cabeçalho.
+- Home, Compras, Decisões e Dashboard usam a mesma disposição agrupada dos links de navegação.
+- A consulta de IA abre uma caixa flutuante expansível, sem bloquear a página. Fechar ou pressionar Escape dentro da consulta preserva a conversa para reabertura na mesma página.
 
 Verificação adicional: `node tests/ajustes-home.cjs` (mesma configuração de Playwright e Chrome dos demais testes).
+
+Navegação e consulta flutuante: `node tests/navegacao-chat.cjs`.
 
 ## Arquivos
 

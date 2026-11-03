@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Painel de Suprimentos – Usina Alcar (dados fictícios)</title>
-<link rel="stylesheet" href="css/styles.css"><link rel="stylesheet" href="css/interface.css"><link rel="stylesheet" href="css/controles.css"><link rel="stylesheet" href="css/kpi-tooltips.css">
+<link rel="stylesheet" href="css/styles.css"><link rel="stylesheet" href="css/interface.css"><link rel="stylesheet" href="css/controles.css"><link rel="stylesheet" href="css/kpi-tooltips.css"><link rel="stylesheet" href="css/chat-consulta.css">
 </head>
 <body data-pagina="decisoes">
 
@@ -110,12 +110,12 @@
       <div id="bench-corpo"></div></div>
     </section>
 
-    <dialog id="dg-agente" aria-labelledby="t6"><div class="dc"><button class="btn peq fecha" id="fx-agente">Fechar (Esc)</button>
+    <section id="dg-agente" role="region" aria-labelledby="t6" hidden><div class="dc"><button class="btn peq fecha" id="fx-agente" aria-label="Fechar consulta de IA">Fechar</button>
       <div class="cab"><h2 id="t6"><span class="n">6</span>Agente de IA de consulta</h2></div>
       <p class="nota" style="margin:0 0 6px">No protótipo, as respostas vêm de regras locais. No sistema, o acervo (RAG) responde às perguntas conceituais e funções somente leitura consultam a camada ouro.</p>
       <div class="chat" id="chat" aria-live="polite" tabindex="0"></div>
       <form class="form-chat" id="form-chat"><input id="q" aria-label="Pergunta ao agente" placeholder="Pergunte, por exemplo: como calcular o estoque de segurança?" autocomplete="off"><button class="btn pri" type="submit">Enviar</button></form>
-      <div class="sugs" id="sugs"></div></div></dialog>
+      <div class="sugs" id="sugs"></div></div></section>
 
     <section data-vista="decisoes" class="cartao c-12" aria-labelledby="t7">
       <div class="cab"><h2 id="t7"><span class="n">7</span>Registro das decisões</h2>
@@ -129,7 +129,7 @@
 
 <dialog id="dg-item" class="gaveta" aria-label="Detalhe do item"><div class="dc" id="dg-item-c"></div></dialog>
 <dialog id="dg-sobre" aria-label="Governança e metodologia"><div class="dc" id="dg-sobre-c"></div></dialog>
-<button class="btn pri agente-abrir" id="bt-agente" aria-haspopup="dialog" aria-controls="dg-agente">Consultar agente de IA</button><div class="toast" id="toast" role="status"></div>
+<button class="btn pri agente-abrir" id="bt-agente" aria-expanded="false" aria-controls="dg-agente">Consultar agente de IA</button><div class="toast" id="toast" role="status"></div>
 
 <script src="js/dados.js"></script>
 <script src="js/app.js"></script><script src="js/interface.js"></script>

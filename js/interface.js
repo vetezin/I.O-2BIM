@@ -14,6 +14,7 @@ function prepararPaginas() {
   if (['analista', 'compras', 'gestor'].includes(salvo.perfil)) S.perfil = salvo.perfil;
   if (typeof salvo.nivel === 'number' && salvo.nivel >= 85 && salvo.nivel <= 99.5) S.nivel = salvo.nivel;
   const pagina = document.body.dataset.pagina;
+  if (pagina === 'compras' && !['', 'crit', 'aten'].includes(S.risco)) S.risco = '';
   $$('[data-vista]').forEach(el => { el.hidden = el.dataset.vista !== pagina; });
   $$('.navegacao a').forEach(a => { if (a.dataset.pagina === pagina) a.setAttribute('aria-current', 'page'); });
   document.title = `${{home:'Home', compras:'Compras', decisoes:'Decisões'}[pagina]} · Suprimentos Alcar`;
@@ -22,6 +23,12 @@ function prepararControles() {
   for (const [id, campo] of [['f-fam','fam'], ['f-forn','forn'], ['f-safra','safra'], ['f-pad','pad'], ['f-abc','abc'], ['perfil','perfil'], ['f-nivel','nivel'], ['f-inicio','inicio'], ['f-fim','fim']]) $('#' + id).value = S[campo];
   const item = ITENS.find(i => i.id === +S.item);
   $('#f-item').value = item ? `${item.nome} — ${item.cod}` : '';
+  const risco = $('#f-risco');
+  if (risco) {
+    risco.value = S.risco;
+    risco.addEventListener('change', () => { S.risco = risco.value; S.mostrar = 12; render(); });
+    $('#bt-limpar').addEventListener('click', () => { risco.value = ''; });
+  }
   for (const id of ['f-inicio', 'f-fim']) $('#' + id).addEventListener('change', () => {
     const inicio = $('#f-inicio'), fim = $('#f-fim');
     inicio.setCustomValidity(''); fim.setCustomValidity('');
@@ -33,7 +40,8 @@ function prepararControles() {
   });
   $$('[data-recolher]').forEach(b => b.addEventListener('click', () => {
     const el = $('#' + b.dataset.recolher); el.hidden = !el.hidden;
-    b.setAttribute('aria-expanded', String(!el.hidden)); b.textContent = el.hidden ? 'Expandir' : 'Recolher';
+    b.setAttribute('aria-expanded', String(!el.hidden));
+    b.setAttribute('aria-label', `${el.hidden ? 'Expandir' : 'Recolher'} ${b.dataset.titulo}`);
     if (!el.hidden) render();
   }));
   $('#bt-agente').onclick = () => { $('#dg-agente').showModal(); $('#q').focus(); };

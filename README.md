@@ -25,6 +25,17 @@ node serve.cjs
 
 Abra http://127.0.0.1:4173. Use sempre a mesma origem (endereço e porta) para preservar filtros e decisões entre as páginas. Também pode hospedar os arquivos em qualquer servidor estático.
 
+O servidor precisa permanecer em execução durante o uso. O Dashboard mostra um erro com opção de tentar novamente se seus módulos falharem ou o JSON não responder em 15 segundos.
+
+## Ajustes da Home e Compras
+
+- Setas junto aos títulos de risco e benchmarking substituem os botões de recolher/expandir.
+- Os seis indicadores da Home têm botão de informação com significado e fórmula. As explicações abrem por mouse, teclado ou toque; Escape fecha.
+- Compras possui filtro de criticidade (Crítico/Atenção), preservado na navegação e recarga e removido por Limpar filtros.
+- O cabeçalho acompanha a rolagem nas quatro telas; a posição dos filtros considera a altura real do cabeçalho.
+
+Verificação adicional: `node tests/ajustes-home.cjs` (mesma configuração de Playwright e Chrome dos demais testes).
+
 ## Arquivos
 
 - `index.html`: Home, indicadores, consumo, clima, risco e benchmarking.

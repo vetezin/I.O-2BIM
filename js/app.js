@@ -180,6 +180,38 @@ function delta(v, ant, menorMelhor, unid, casas = 1) {
   const bom = menorMelhor ? d < 0 : d > 0;
   return `<span class="delta ${bom ? 'melhor' : 'pior'}">${d > 0 ? '▲' : '▼'} ${nf1.format(ab)} ${unid} (${bom ? 'melhor' : 'pior'}) vs. período anterior</span>`;
 }
+function kpiAjuda(id, titulo, significado, formula) {
+  return `<div class="rot kpi-titulo"><span>${titulo}</span><span class="kpi-ajuda"><button class="kpi-info" type="button" aria-label="Como é calculado: ${titulo}" aria-expanded="false" aria-controls="kpi-tip-${id}" aria-describedby="kpi-tip-${id}">i</button><span class="kpi-tooltip" id="kpi-tip-${id}" role="tooltip" hidden><strong>${titulo}</strong><span>${significado}</span><b>Cálculo no protótipo</b><span>${formula}</span></span></span></div>`;
+}
+function prepararAjudaKPIs() {
+  const host = $('#kpis');
+  let aberta = null, fixa = false, sair;
+  const fechar = () => {
+    clearTimeout(sair);
+    if (aberta) { $('.kpi-info', aberta).setAttribute('aria-expanded', 'false'); $('.kpi-tooltip', aberta).hidden = true; }
+    aberta = null; fixa = false;
+  };
+  const abrir = ajuda => {
+    clearTimeout(sair);
+    if (aberta !== ajuda) { fechar(); aberta = ajuda; }
+    const botao = $('.kpi-info', ajuda), tip = $('.kpi-tooltip', ajuda), r = botao.getBoundingClientRect();
+    tip.hidden = false; botao.setAttribute('aria-expanded', 'true');
+    tip.style.left = Math.max(12, Math.min(r.right - tip.offsetWidth, innerWidth - tip.offsetWidth - 12)) + 'px';
+    tip.style.top = Math.max(12, r.bottom + tip.offsetHeight + 8 <= innerHeight ? r.bottom + 4 : r.top - tip.offsetHeight - 4) + 'px';
+  };
+  host.addEventListener('pointerover', e => { const ajuda = e.target.closest('.kpi-ajuda'); if (ajuda && !ajuda.contains(e.relatedTarget)) abrir(ajuda); });
+  host.addEventListener('pointerout', e => { if (aberta && !aberta.contains(e.relatedTarget) && !fixa && !aberta.contains(document.activeElement)) sair = setTimeout(fechar, 160); });
+  host.addEventListener('focusin', e => { const ajuda = e.target.closest('.kpi-ajuda'); if (ajuda) abrir(ajuda); });
+  host.addEventListener('focusout', e => { if (aberta && !aberta.contains(e.relatedTarget)) fechar(); });
+  host.addEventListener('click', e => { const ajuda = e.target.closest('.kpi-ajuda'); if (e.target.closest('.kpi-info')) { if (aberta === ajuda && fixa) fechar(); else { abrir(ajuda); fixa = true; } } });
+  document.addEventListener('click', e => { if (aberta && !aberta.contains(e.target)) fechar(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && aberta) { fechar(); e.preventDefault(); } });
+  window.addEventListener('scroll', e => {
+    if (!aberta || e.target.closest?.('.kpi-tooltip')) return;
+    const r = $('.kpi-info', aberta).getBoundingClientRect();
+    if (r.bottom < 0 || r.top > innerHeight) fechar(); else abrir(aberta);
+  }, true);
+}
 function renderKPIs(F, idx) {
   const el = $('#kpis');
   if (!F.length) { el.innerHTML = '<div class="kpi" style="grid-column:1/-1"><div class="rot">Sem itens</div><div class="det">Nenhum item atende aos filtros. Use “Limpar filtros”.</div></div>'; return; }
@@ -195,19 +227,19 @@ function renderKPIs(F, idx) {
   const sAc = [...Array(NW).keys()].map(k => 100 - wape(F, [k])), sAcS = sAc.map((_, i) => i < 3 ? null : mean(sAc.slice(i - 3, i + 1)));
   const sLt = [...Array(NW).keys()].map(k => mean(F.map(i => FOR[i.forn].lt[k])));
   el.innerHTML = `
-  <div class="kpi"><div class="rot">Itens em risco crítico</div><div class="val num">${nf0.format(nc)}<small>de ${nf0.format(F.length)}</small></div>
+  <div class="kpi">${kpiAjuda('criticos', 'Itens em risco crítico', 'Quantidade de itens cuja falta é prevista antes ou no prazo total de reposição. Considera saldo, consumo previsto e chegada do estoque em trânsito.', 'Conta os itens com dia de ruptura ≤ L. L = prazo médio do fornecedor + aprovação interna, ambos nas últimas 13 semanas. A projeção desconta máx(previsão semanal ÷ 7; 0,000001) por dia e soma o trânsito no dia de chegada; saldo zero já conta como falta. Horizonte: 120 dias.')}<div class="val num">${nf0.format(nc)}<small>de ${nf0.format(F.length)}</small></div>
     <div class="det">${nf0.format(na)} em atenção · ${nf0.format(F.length - nc - na)} sem risco</div>
     <div class="det">${ico('crit')} ruptura prevista dentro do prazo de reposição</div></div>
-  <div class="kpi"><div class="rot">Taxa de ruptura</div><div class="val num">${rup == null ? '–' : pc(rup)}</div>
+  <div class="kpi">${kpiAjuda('ruptura', 'Taxa de ruptura', 'Percentual das combinações de item e semana que registraram falta no período selecionado.', '100 × item-semanas com registro de falta ÷ (nº de itens × nº de semanas selecionadas). Cada item e semana tem o mesmo peso; sem semanas, exibe “–”.')}<div class="val num">${rup == null ? '–' : pc(rup)}</div>
     <div class="det">item-semanas com falta, no período</div>${delta(rup, rupA, true, 'p.p.')}${spark(sRupS)}</div>
-  <div class="kpi"><div class="rot">Acurácia da previsão</div><div class="val num">${ac == null ? '–' : pc(ac)}</div>
+  <div class="kpi">${kpiAjuda('acuracia', 'Acurácia da previsão', 'Indica a precisão das previsões pelo complemento do erro absoluto ponderado (WAPE), usando o método ativo de cada item.', '100 − (100 × soma dos erros absolutos ÷ soma do consumo real), para os itens e semanas selecionados. Os erros vêm dos dados simulados. Pode ficar negativa se o erro superar o consumo. Sem semanas, exibe “–”; com consumo real zero, o protótipo exibe 100%.')}<div class="val num">${ac == null ? '–' : pc(ac)}</div>
     <div class="det">1 − WAPE, método em uso por item</div>${delta(ac, acA, false, 'p.p.')}${spark(sAcS)}</div>
-  <div class="kpi"><div class="rot">Cobertura do estoque</div><div class="val num">${nf0.format(cob)}<small>dias</small></div>
+  <div class="kpi">${kpiAjuda('cobertura', 'Cobertura do estoque', 'Dias de consumo previsto cobertos pelo saldo atual, ponderados pelo custo dos itens. Não inclui estoque em trânsito.', 'Σ(saldo × custo unitário) ÷ Σ(consumo diário previsto × custo unitário). Consumo diário = máx(previsão semanal ÷ 7; 0,000001). Se o denominador for zero, retorna 0. Usa a posição atual e a previsão cadastrada, sem depender do período selecionado.')}<div class="val num">${nf0.format(cob)}<small>dias</small></div>
     <div class="det">valor parado: ${brlK(val)}</div><div class="det">saldo ÷ consumo previsto, ponderado por valor</div></div>
-  <div class="kpi"><div class="rot">Lead time real do fornecedor</div><div class="val num">${nf1.format(lt8)}<small>dias</small></div>
+  <div class="kpi">${kpiAjuda('leadtime', 'Lead time real do fornecedor', 'Prazo médio realizado pelos fornecedores dos itens do recorte, em dias, comparado ao prazo prometido.', 'Para cada item, calcula a média do prazo de seu fornecedor nas últimas 8 semanas; depois calcula a média entre os itens. Um fornecedor aparece uma vez por item, portanto não é uma média de fornecedores distintos. O prometido também é calculado por item. Não inclui aprovação interna e não depende do período selecionado.')}<div class="val num">${nf1.format(lt8)}<small>dias</small></div>
     <div class="det">prometido: ${nf1.format(prom)} dias · últimas 8 semanas</div>
     <span class="delta ${lt8 > prom + .05 ? 'pior' : 'melhor'}">${lt8 > prom + .05 ? '▲' : '▼'} ${nf1.format(Math.abs(lt8 - prom))} dias ${lt8 > prom + .05 ? 'acima' : 'abaixo'} do prometido</span>${spark(sLt, 150, 30, '#5E6B66')}</div>
-  <div class="kpi"><div class="rot">Compras sugeridas</div><div class="val num">${brlK(sum(comp.map(i => i.valor)))}</div>
+  <div class="kpi">${kpiAjuda('compras', 'Compras sugeridas', 'Valor das reposições sugeridas para itens críticos ou em atenção que ainda aguardam decisão. Exclui decisões aceitas, aprovadas ou recusadas.', 'Σ(quantidade sugerida × custo unitário). Quantidade = lote × máx(1; teto((PP − posição + 1) ÷ lote)); lote = máx(3; teto(30 × demanda diária)); posição = saldo + trânsito. PP = demanda diária × (revisão + prazo total) + estoque de segurança. O estoque de segurança usa o nível de serviço escolhido.')}<div class="val num">${brlK(sum(comp.map(i => i.valor)))}</div>
     <div class="det">${nf0.format(comp.length)} itens aguardando decisão</div><div class="det">nível de serviço alvo: ${pc(S.nivel)} (z = ${nf2.format(S.z)})</div></div>`;
 }
 
@@ -525,6 +557,7 @@ function render() {
 }
 function init() {
   prepararPaginas();
+  prepararAjudaKPIs();
   const fam = $('#f-fam'); fam.innerHTML = '<option value="">Todos os tipos de item</option>' + D.familias.map(f => `<option value="${f.id}">${esc(f.nome)}</option>`).join('');
   $('#f-forn').innerHTML = '<option value="">Todos os fornecedores</option>' + D.fornecedores.map(f => `<option value="${f.id}">${esc(f.nome)}</option>`).join('');
   $('#dl-itens').innerHTML = ITENS.map(i => `<option value="${esc(i.nome)} — ${i.cod}"></option>`).join('');

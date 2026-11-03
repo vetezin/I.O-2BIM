@@ -92,9 +92,8 @@ function events() {
   document.addEventListener('pointerover',showTip);document.addEventListener('focusin',showTip);
   document.addEventListener('pointerout',()=>{if(!document.activeElement?.closest('[data-tip]'))$('#tooltip').hidden=true;});document.addEventListener('focusout',()=>$('#tooltip').hidden=true);
 }
-async function init() {
-  try{const response=await fetch('dashboard/dados_alcar.json');if(!response.ok)throw Error('HTTP '+response.status);D=core.validate(await response.json());F=fromHash();decisions=core.readDecisions(D,storage());D.decisoes=decisions;
+export async function init() {
+  try{const response=await fetch('dashboard/dados_alcar.json',{signal:AbortSignal.timeout(15000)});if(!response.ok)throw Error('HTTP '+response.status);D=core.validate(await response.json());F=fromHash();decisions=core.readDecisions(D,storage());D.decisoes=decisions;
     filters();render();events();$('#filters').hidden=false;$('#dashboard').hidden=false;$('#loading').hidden=true;
-  }catch(e){$('#loading').innerHTML=`<p role="alert">Não foi possível carregar o Dashboard: ${core.esc(e.message)}.</p><button id="retry">Tentar novamente</button>`;$('#retry').onclick=()=>location.reload();}
+  }catch(e){const reason=e.name==='TimeoutError'?'o servidor não respondeu em 15 segundos. Verifique a conexão e tente novamente':e.message;$('#loading').innerHTML=`<p role="alert">Não foi possível carregar o Dashboard: ${core.esc(reason)}.</p><button id="retry">Tentar novamente</button>`;$('#retry').onclick=()=>location.reload();}
 }
-init();

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Painel de Suprimentos – Usina Alcar (dados fictícios)</title>
-<link rel="stylesheet" href="css/styles.css"><link rel="stylesheet" href="css/interface.css">
+<link rel="stylesheet" href="css/styles.css"><link rel="stylesheet" href="css/interface.css"><link rel="stylesheet" href="css/controles.css"><link rel="stylesheet" href="css/kpi-tooltips.css">
 </head>
 <body data-pagina="home">
 
@@ -87,8 +87,8 @@
 
     <section data-vista="home" class="cartao c-12" aria-labelledby="t3">
       <div class="cab">
-        <h2 id="t3"><span class="n">3</span>Risco de ruptura por item</h2>
-        <button class="btn peq" data-recolher="risco-conteudo" aria-expanded="true" aria-controls="risco-conteudo">Recolher</button><div class="ferr" id="chips-risco" role="group" aria-label="Filtro por risco"></div>
+        <h2 id="t3"><button class="seta-secao" data-recolher="risco-conteudo" data-titulo="Risco de ruptura por item" aria-expanded="true" aria-controls="risco-conteudo" aria-label="Recolher Risco de ruptura por item"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="n">3</span>Risco de ruptura por item</h2>
+        <div class="ferr" id="chips-risco" role="group" aria-label="Filtro por risco"></div>
       </div>
       <div id="risco-conteudo"><p class="nota" style="margin:0 0 6px">Situação em 22/10/2026. Não depende do período escolhido. Clique em um item para ver o cálculo.</p>
       <div class="rolar" style="max-height:470px;overflow:auto"><table id="tb-risco"></table></div>
@@ -101,7 +101,7 @@
     </section>
 
     <section data-vista="home" class="cartao c-12" aria-labelledby="t5">
-      <div class="cab"><h2 id="t5"><span class="n">5</span>Benchmarking e tendências</h2><button class="btn peq" data-recolher="bench-conteudo" aria-expanded="true" aria-controls="bench-conteudo">Recolher</button><span class="nota">Referências setoriais fictícias, a validar na Matriz de Indicadores.</span></div>
+      <div class="cab"><h2 id="t5"><button class="seta-secao" data-recolher="bench-conteudo" data-titulo="Benchmarking e tendências" aria-expanded="true" aria-controls="bench-conteudo" aria-label="Recolher Benchmarking e tendências"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><span class="n">5</span>Benchmarking e tendências</h2><span class="nota">Referências setoriais fictícias, a validar na Matriz de Indicadores.</span></div>
       <div id="bench-conteudo"><div class="abas" role="tablist" id="abas">
         <button role="tab" data-t="forn" aria-selected="true">Fornecedores</button>
         <button role="tab" data-t="rup" aria-selected="false">Ruptura vs. referência</button>
@@ -133,5 +133,5 @@
 
 <script src="js/dados.js"></script>
 <script src="js/app.js"></script><script src="js/interface.js"></script>
-</body>
+<script src="js/cabecalho.js"></script></body>
 </html>

@@ -103,6 +103,11 @@ const server=require('../serve.cjs');
     assert.match(await p.locator('#decision-log').innerText(),/aceitou/);assert.match(await p.locator('#storage-status').innerText(),/somente em memória/);
     const broken=await browser.newContext();await broken.route('**/dados_alcar.json',route=>route.fulfill({status:200,contentType:'application/json',body:'{}'}));
     const b=await broken.newPage();await b.goto(url);await b.locator('#retry').waitFor();assert.match(await b.locator('#loading').innerText(),/Contrato inválido/);
+    const missingModule=await browser.newContext();
+    await missingModule.route('**/dashboard/app.mjs',route=>route.fulfill({status:404,contentType:'text/plain',body:'Arquivo não encontrado'}));
+    const missing=await missingModule.newPage();await missing.goto(url);
+    await missing.locator('#retry').waitFor({timeout:5000});
+    assert.match(await missing.locator('#loading').innerText(),/Não foi possível iniciar/);
     console.log('OK: 6 painéis, valores do contrato, fonte única, filtros, 390/820/1366, tooltips/tabelas/CSV, decisões persistidas, gaveta, armazenamento bloqueado e erro de contrato.');
   }finally{if(browser)await browser.close();await new Promise(r=>server.close(r));if(temp)await fs.rm(temp,{recursive:true,force:true});}
 })().catch(e=>{console.error(e);process.exitCode=1;});

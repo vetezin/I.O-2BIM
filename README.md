@@ -59,7 +59,7 @@ Navegação e consulta flutuante: `node tests/navegacao-chat.cjs`.
 - Card climático alterna com um mapa esquemático da usina fictícia. Não há localização ou serviço meteorológico definido no documento: o mapa usa os mesmos dados simulados, sem radar nem previsão real.
 - Compras e decisões possuem páginas próprias, com links no cabeçalho. A Home contém um resumo e botão para abrir as compras. Aceites, recusas, aprovações e devoluções aparecem no histórico.
 - Risco ocupa a largura disponível; risco e benchmarking possuem controles de recolher/expandir.
-- Agente acessível por botão flutuante que abre uma janela modal com fechamento por botão ou Escape.
+- Agente acessível por botão flutuante que expande uma caixa de conversa sem bloquear a página, com fechamento por botão ou Escape.
 
 ## Validação
 

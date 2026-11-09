@@ -34,8 +34,15 @@ function filters() {
 function render() {
   const focus=focusSelector();
   items=core.simulate(D,F.nivel);
-  const views=[['p1',1],['p5',5],['p3',3],['p2',2],['p4',4],['p6',6]].filter(([name])=>typeof panels[name]==='function');
-  const steps=views.map(([,n],index)=>`<li>${index ? '<span aria-hidden="true">»</span>' : ''}<a href="#painel-${n}" aria-label="Painel ${n}">${n}</a></li>`).join('');
+  const views=[
+    ['p1',1,'Como estamos?'],
+    ['p5',5,'Como nos comparamos?'],
+    ['p3',3,'Riscos e compras'],
+    ['p2',2,'Como estão as entregas?'],
+    ['p4',4,'Previsão e aprovação'],
+    ['p6',6,'O clima influencia?'],
+  ].filter(([name])=>typeof panels[name]==='function');
+  const steps=views.map(([,n,label],index)=>`<li>${index ? '<span aria-hidden="true">»</span>' : ''}<a href="#painel-${n}">${label}</a></li>`).join('');
   $('#dashboard').innerHTML=`<p class="notice">${core.esc(D.meta.aviso)} Os indicadores desta aba vêm do contrato do DW, versão ${core.esc(D.meta.versao_contrato)}. As telas anteriores preservam o protótipo original.</p><nav class="panel-nav" aria-label="Ordem de leitura dos painéis"><ol role="list">${steps}</ol></nav>${views.map(([name])=>panels[name](D,F,decisions,items)).join('')}${decisionHistory()}`;
   const params=new URLSearchParams();for(const k of ['fam','janela','agricola','forn','abc','risco','padrao','nivel','indicador'])if(F[k]!==''&&F[k]!=null)params.set(k,F[k]);
   history.replaceState(null,'','#'+params);

@@ -27,10 +27,6 @@ Abra http://127.0.0.1:4173. Use sempre a mesma origem (endereço e porta) para p
 
 O servidor precisa permanecer em execução durante o uso. O Dashboard mostra um erro com opção de tentar novamente se seus módulos falharem ou o JSON não responder em 15 segundos.
 
-### Abrir com dois cliques no Windows
-
-Com o Docker Desktop instalado, dê dois cliques em `Abrir Painel.cmd` na pasta do projeto. O arquivo inicia o Docker Desktop se necessário, sobe o painel e abre o navegador. Se houver um `API_KEY.txt` local na mesma pasta, o chat sobe com Gemini. Sem o arquivo, o chat funciona pelas regras locais.
-
 ### Docker Compose no CMD do Windows
 
 Com o Docker Desktop iniciado, abra o CMD na pasta do projeto:

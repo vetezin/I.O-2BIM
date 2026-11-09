@@ -15,6 +15,6 @@ const server = http.createServer(async (req, res) => {
   } catch { res.writeHead(404); res.end('Arquivo não encontrado'); }
 });
 if (require.main === module) {
-  server.listen(4173, '127.0.0.1', () => console.log('Painel: http://127.0.0.1:4173'));
+  server.listen(4173, process.env.HOST || '127.0.0.1', () => console.log('Painel: http://127.0.0.1:4173'));
 }
 module.exports = server;

@@ -1,0 +1,6 @@
+*
+!serve.cjs
+!*.html
+!css/
+!js/
+!dashboard/

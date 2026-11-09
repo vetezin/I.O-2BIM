@@ -8,7 +8,7 @@ const server = require('../serve.cjs');
 (async () => {
   let browser, temp;
   try {
-    await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+    if (!process.env.PAINEL_URL) await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
     const options = {headless:true};
     if (process.env.CHROME_PATH) options.executablePath = process.env.CHROME_PATH;
     browser = await chromium.launch(options);
@@ -16,7 +16,7 @@ const server = require('../serve.cjs');
     const errors = [];
     page.on('pageerror', e => errors.push(e.message));
     page.on('response', r => { if (r.status() >= 400) errors.push(`${r.status()} ${r.url()}`); });
-    const base = `http://127.0.0.1:${server.address().port}`;
+    const base = process.env.PAINEL_URL || `http://127.0.0.1:${server.address().port}`;
     await page.goto(base);
     await page.selectOption('#f-fam', 'FIL');
     await page.fill('#f-inicio', '2026-08-01');
@@ -87,7 +87,7 @@ const server = require('../serve.cjs');
     console.log('OK: filtros, datas, compras, decisões, persistência, modal, mapa, recolhimento, XLSX e layout móvel.');
   } finally {
     if (browser) await browser.close();
-    await new Promise(resolve => server.close(resolve));
+    if (server.listening) await new Promise(resolve => server.close(resolve));
     if (temp) await fs.rm(temp, {recursive:true, force:true});
   }
 })().catch(error => { console.error(error); process.exitCode = 1; });

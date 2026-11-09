@@ -27,6 +27,32 @@ Abra http://127.0.0.1:4173. Use sempre a mesma origem (endereço e porta) para p
 
 O servidor precisa permanecer em execução durante o uso. O Dashboard mostra um erro com opção de tentar novamente se seus módulos falharem ou o JSON não responder em 15 segundos.
 
+### Docker Compose no CMD do Windows
+
+Com o Docker Desktop iniciado, abra o CMD na pasta do projeto:
+
+```bat
+cd /d "C:\Users\Victor\Desktop\Faculdade\I.O\painel"
+docker compose up --build -d
+docker compose logs -f painel
+```
+
+Abra [o painel](http://127.0.0.1:4173/). Para sair dos logs, pressione Ctrl+C. Para parar e remover o contêiner, execute `docker compose down`.
+
+A imagem usa o JSON já versionado em `dashboard/dados_alcar.json`. A geração por Python e SQLite continua separada. Decisões e filtros são guardados pelo navegador na origem `http://127.0.0.1:4173`.
+
+Com o painel no ar e o Playwright configurado conforme a seção Validação, rode no CMD:
+
+```bat
+node --test tests/dashboard.test.cjs
+set "PAINEL_URL=http://127.0.0.1:4173/"
+node tests/smoke.cjs
+node tests/dashboard.smoke.cjs
+set "PAINEL_URL="
+```
+
+Validação no Docker Desktop para Windows em 09/11/2026: seis testes do Dashboard e os dois testes de navegador acima passaram. Os fluxos cobriram Home, Compras, Decisões e Dashboard, incluindo carregamento do JSON, filtros, chat local e decisões após recarregar.
+
 ## Ajustes da Home e Compras
 
 - Setas junto aos títulos de risco e benchmarking substituem os botões de recolher/expandir.

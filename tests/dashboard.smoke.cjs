@@ -7,13 +7,14 @@ const server=require('../serve.cjs');
 (async()=>{
   let browser,temp;
   try{
-    await new Promise(r=>server.listen(0,'127.0.0.1',r));
+    if(!process.env.PAINEL_URL)await new Promise(r=>server.listen(0,'127.0.0.1',r));
     browser=await chromium.launch({headless:true,...(process.env.CHROME_PATH?{executablePath:process.env.CHROME_PATH}:{})});
     const ctx=await browser.newContext(),page=await ctx.newPage({viewport:{width:1366,height:900}}),errors=[],requests=[];
     page.on('pageerror',e=>errors.push(e.message));
     page.on('console',m=>{if(['error','warning'].includes(m.type()))errors.push(m.text());});
     page.on('request',r=>requests.push(r.url()));
-    const url=`http://127.0.0.1:${server.address().port}/dashboard.html`;
+    const base=process.env.PAINEL_URL||`http://127.0.0.1:${server.address().port}`;
+    const url=new URL('/dashboard.html',base).href;
     await page.goto(url);await page.locator('[data-kpi=E1]').waitFor();
     assert.equal(await page.locator('.panel[id^=painel-]').count(),6);
     for(const [k,v]of Object.entries({E1:95.5,E2:49.2,E3:22.44,O1:69.62,O2:2.89,O3:11.5}))assert.equal(Number(await page.locator(`[data-kpi=${k}]`).getAttribute('data-value')),v);
@@ -109,5 +110,5 @@ const server=require('../serve.cjs');
     await missing.locator('#retry').waitFor({timeout:5000});
     assert.match(await missing.locator('#loading').innerText(),/Não foi possível iniciar/);
     console.log('OK: 6 painéis, valores do contrato, fonte única, filtros, 390/820/1366, tooltips/tabelas/CSV, decisões persistidas, gaveta, armazenamento bloqueado e erro de contrato.');
-  }finally{if(browser)await browser.close();await new Promise(r=>server.close(r));if(temp)await fs.rm(temp,{recursive:true,force:true});}
+  }finally{if(browser)await browser.close();if(server.listening)await new Promise(r=>server.close(r));if(temp)await fs.rm(temp,{recursive:true,force:true});}
 })().catch(e=>{console.error(e);process.exitCode=1;});

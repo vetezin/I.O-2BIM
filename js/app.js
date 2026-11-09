@@ -10,7 +10,7 @@ const FOR = Object.fromEntries(D.fornecedores.map(f => [f.id, f]));
 const ITENS = D.itens;
 const ULT = 13;                         // janela dos parâmetros de política (semanas)
 const MET = ['Média móvel (4 sem.)', 'Suavização exponencial', 'Croston/SBA'];
-const MCOR = ['#5E6B66', '#47682C', '#080F0F'], MDASH = ['2 4', '', '7 4'];
+const MCOR = ['var(--cinza)', 'var(--oliva)', 'var(--tinta)'], MDASH = ['2 4', '', '7 4'];
 
 /* ============================================================ utilidades */
 const nf0 = new Intl.NumberFormat('pt-BR', {maximumFractionDigits: 0});
@@ -115,12 +115,12 @@ function lineChart(host, cfg) {
   const X = i => m.l + (n === 1 ? pw / 2 : pw * i / (n - 1)), Y = v => m.t + ph - ph * (v - ylo) / (ymax - ylo);
   const stp = n > 1 ? pw / (n - 1) : pw;
   let g = '';
-  for (let t = 0; t <= yn; t++) { const v = ylo + ystep * t, y = Y(v); g += `<line x1="${m.l}" x2="${W - m.r}" y1="${y}" y2="${y}" stroke="#D5DAD7" stroke-width="${t ? .8 : 1.4}"/><text x="${m.l - 7}" y="${y + 4}" text-anchor="end" font-size="11.5" fill="#5E6B66">${cfg.yFmt(v)}</text>`; }
-  if (cfg.shade) cfg.shade.forEach((on, i) => { if (on) g += `<rect x="${X(i) - stp / 2}" y="${m.t}" width="${stp}" height="${ph}" fill="#E7EEDD"/>`; });
+  for (let t = 0; t <= yn; t++) { const v = ylo + ystep * t, y = Y(v); g += `<line x1="${m.l}" x2="${W - m.r}" y1="${y}" y2="${y}" stroke="#D5DAD7" stroke-width="${t ? .8 : 1.4}"/><text x="${m.l - 7}" y="${y + 4}" text-anchor="end" font-size="11.5" fill="var(--cinza)">${cfg.yFmt(v)}</text>`; }
+  if (cfg.shade) cfg.shade.forEach((on, i) => { if (on) g += `<rect x="${X(i) - stp / 2}" y="${m.t}" width="${stp}" height="${ph}" fill="var(--oliva-claro)"/>`; });
   const every = Math.ceil(n / Math.max(3, Math.floor(pw / 62)));
-  cfg.labels.forEach((l, i) => { if (i % every === 0) g += `<text x="${X(i)}" y="${H - 9}" text-anchor="middle" font-size="11.5" fill="#5E6B66">${l}</text>`; });
-  if (cfg.divisor != null) g += `<line x1="${X(cfg.divisor)}" x2="${X(cfg.divisor)}" y1="${m.t}" y2="${m.t + ph}" stroke="#5E6B66" stroke-dasharray="3 4"/><text x="${X(cfg.divisor) + 5}" y="${m.t + 11}" font-size="11" fill="#5E6B66">${cfg.divRot || ''}</text>`;
-  if (ylo > 0) g += `<text x="${m.l}" y="${m.t - 2}" font-size="10.5" fill="#5E6B66">eixo vertical não começa em zero</text>`;
+  cfg.labels.forEach((l, i) => { if (i % every === 0) g += `<text x="${X(i)}" y="${H - 9}" text-anchor="middle" font-size="11.5" fill="var(--cinza)">${l}</text>`; });
+  if (cfg.divisor != null) g += `<line x1="${X(cfg.divisor)}" x2="${X(cfg.divisor)}" y1="${m.t}" y2="${m.t + ph}" stroke="var(--cinza)" stroke-dasharray="3 4"/><text x="${X(cfg.divisor) + 5}" y="${m.t + 11}" font-size="11" fill="var(--cinza)">${cfg.divRot || ''}</text>`;
+  if (ylo > 0) g += `<text x="${m.l}" y="${m.t - 2}" font-size="10.5" fill="var(--cinza)">eixo vertical não começa em zero</text>`;
   const rotulos = [];
   for (const s of cfg.series) {
     let d = '', pen = false;
@@ -129,8 +129,8 @@ function lineChart(host, cfg) {
     if (cfg.direct) { let li = s.values.length - 1; while (li > 0 && s.values[li] === null) li--; if (s.values[li] != null) rotulos.push({x: X(li) + 6, y: Y(s.values[li]) + 4, t: s.short || s.name}); }
   }
   rotulos.sort((a, b) => a.y - b.y); for (let i = 1; i < rotulos.length; i++) if (rotulos[i].y - rotulos[i - 1].y < 14) rotulos[i].y = rotulos[i - 1].y + 14;
-  rotulos.forEach(r => g += `<text x="${r.x}" y="${r.y}" font-size="11.5" font-weight="600" fill="#46524D">${r.t}</text>`);
-  host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(cfg.aria || '')}">${g}<line class="cx" y1="${m.t}" y2="${m.t + ph}" stroke="#080F0F" stroke-width="1" visibility="hidden"/><g class="dots"></g><rect class="hit" x="${m.l}" y="${m.t}" width="${pw}" height="${ph}" fill="transparent"/></svg><div class="tip" hidden></div><div class="tabela" hidden></div>`;
+  rotulos.forEach(r => g += `<text x="${r.x}" y="${r.y}" font-size="11.5" font-weight="600" fill="var(--cinza-2)">${r.t}</text>`);
+  host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(cfg.aria || '')}">${g}<line class="cx" y1="${m.t}" y2="${m.t + ph}" stroke="var(--tinta)" stroke-width="1" visibility="hidden"/><g class="dots"></g><rect class="hit" x="${m.l}" y="${m.t}" width="${pw}" height="${ph}" fill="transparent"/></svg><div class="tip" hidden></div><div class="tabela" hidden></div>`;
   const tb = `<table><thead><tr><th>${esc(cfg.xName || 'Semana')}</th>${cfg.series.map(s => `<th class="r">${esc(s.name)}</th>`).join('')}</tr></thead><tbody>${cfg.labels.map((l, i) => `<tr><td>${cfg.tabLabels ? cfg.tabLabels[i] : l}</td>${cfg.series.map(s => `<td class="r num">${s.values[i] == null ? '–' : cfg.yFmt(s.values[i], true)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
   $('.tabela', host).innerHTML = tb;
   const svg = $('svg', host), hit = $('.hit', svg), cx = $('.cx', svg), dots = $('.dots', svg), tip = $('.tip', host);
@@ -148,10 +148,10 @@ function lineChart(host, cfg) {
   hit.addEventListener('pointerleave', () => { cx.setAttribute('visibility', 'hidden'); dots.innerHTML = ''; tip.hidden = true; });
 }
 function legenda(el, itens) {
-  el.innerHTML = itens.map(s => s.faixa ? `<span><svg width="18" height="12"><rect width="18" height="12" rx="2" fill="${s.color}" stroke="#cddbbb"/></svg>${s.name}</span>`
+  el.innerHTML = itens.map(s => s.faixa ? `<span><svg width="18" height="12"><rect width="18" height="12" rx="2" fill="${s.color}" stroke="var(--borda)"/></svg>${s.name}</span>`
     : `<span><svg width="26" height="10"><line x1="1" x2="25" y1="5" y2="5" stroke="${s.color}" stroke-width="${s.w || 2.4}" ${s.dash ? `stroke-dasharray="${s.dash}"` : ''} stroke-linecap="round"/></svg>${s.name}</span>`).join('');
 }
-function spark(arr, w = 150, h = 30, cor = '#47682C') {
+function spark(arr, w = 150, h = 30, cor = 'var(--oliva)') {
   const ok = arr.filter(v => v != null); if (ok.length < 2) return '';
   const mn = Math.min(...ok), mx = Math.max(...ok), rg = mx - mn || 1;
   const pts = arr.map((v, i) => v == null ? null : [i * (w - 4) / (arr.length - 1) + 2, h - 3 - (h - 6) * (v - mn) / rg]).filter(Boolean);
@@ -160,7 +160,7 @@ function spark(arr, w = 150, h = 30, cor = '#47682C') {
 }
 const ico = r => r === 'crit' ? '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="#B3261E"/><rect x="7.1" y="3.6" width="1.8" height="5.6" rx=".9" fill="#fff"/><circle cx="8" cy="11.6" r="1.1" fill="#fff"/></svg>'
   : r === 'aten' ? '<svg width="17" height="16" viewBox="0 0 17 16" aria-hidden="true"><path d="M8.5 0.8 16.6 15H.4z" fill="#C98A00"/><rect x="7.6" y="5.6" width="1.8" height="5" rx=".9" fill="#fff"/><circle cx="8.5" cy="12.6" r="1" fill="#fff"/></svg>'
-  : '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="#47682C"/><path d="M4.4 8.3l2.5 2.5 4.8-5" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  : '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="var(--ok)"/><path d="M4.4 8.3l2.5 2.5 4.8-5" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const rdTxt = it => it.rd == null ? '&gt; 120 dias' : it.rd === 0 ? 'já em falta' : it.rd + (it.rd === 1 ? ' dia' : ' dias');
 const RNOME = {crit: 'Crítico', aten: 'Atenção', ok: 'Sem risco'};
 const stl = r => `<span class="st">${ico(r)}${RNOME[r]}</span>`;
@@ -238,7 +238,7 @@ function renderKPIs(F, idx) {
     <div class="det">valor parado: ${brlK(val)}</div><div class="det">saldo ÷ consumo previsto, ponderado por valor</div></div>
   <div class="kpi">${kpiAjuda('leadtime', 'Lead time real do fornecedor', 'Prazo médio realizado pelos fornecedores dos itens do recorte, em dias, comparado ao prazo prometido.', 'Para cada item, calcula a média do prazo de seu fornecedor nas últimas 8 semanas; depois calcula a média entre os itens. Um fornecedor aparece uma vez por item, portanto não é uma média de fornecedores distintos. O prometido também é calculado por item. Não inclui aprovação interna e não depende do período selecionado.')}<div class="val num">${nf1.format(lt8)}<small>dias</small></div>
     <div class="det">prometido: ${nf1.format(prom)} dias · últimas 8 semanas</div>
-    <span class="delta ${lt8 > prom + .05 ? 'pior' : 'melhor'}">${lt8 > prom + .05 ? '▲' : '▼'} ${nf1.format(Math.abs(lt8 - prom))} dias ${lt8 > prom + .05 ? 'acima' : 'abaixo'} do prometido</span>${spark(sLt, 150, 30, '#5E6B66')}</div>
+    <span class="delta ${lt8 > prom + .05 ? 'pior' : 'melhor'}">${lt8 > prom + .05 ? '▲' : '▼'} ${nf1.format(Math.abs(lt8 - prom))} dias ${lt8 > prom + .05 ? 'acima' : 'abaixo'} do prometido</span>${spark(sLt, 150, 30, 'var(--cinza)')}</div>
   <div class="kpi">${kpiAjuda('compras', 'Compras sugeridas', 'Valor das reposições sugeridas para itens críticos ou em atenção que ainda aguardam decisão. Exclui decisões aceitas, aprovadas ou recusadas.', 'Σ(quantidade sugerida × custo unitário). Quantidade = lote × máx(1; teto((PP − posição + 1) ÷ lote)); lote = máx(3; teto(30 × demanda diária)); posição = saldo + trânsito. PP = demanda diária × (revisão + prazo total) + estoque de segurança. O estoque de segurança usa o nível de serviço escolhido.')}<div class="val num">${brlK(sum(comp.map(i => i.valor)))}</div>
     <div class="det">${nf0.format(comp.length)} itens aguardando decisão</div><div class="det">nível de serviço alvo: ${pc(S.nivel)} (z = ${nf2.format(S.z)})</div></div>`;
 }
@@ -255,9 +255,9 @@ const MSG_CL = {
   CHUVOSO: 'A colheita tende a parar, e a hipótese é de mais quebras em equipamentos industriais.',
   NORMAL: 'Sem sinal climático forte; seguir o ponto de pedido.'};
 const ICO_CL = {
-  SECO: '<svg width="38" height="38" viewBox="0 0 38 38" aria-hidden="true"><circle cx="19" cy="19" r="7" fill="#47682C"/><g stroke="#47682C" stroke-width="2.4" stroke-linecap="round"><path d="M19 4v5M19 29v5M4 19h5M29 19h5M8.4 8.4l3.5 3.5M26.1 26.1l3.5 3.5M8.4 29.6l3.5-3.5M26.1 11.9l3.5-3.5"/></g></svg>',
-  CHUVOSO: '<svg width="42" height="38" viewBox="0 0 42 38" aria-hidden="true"><path d="M11 24a7 7 0 0 1 .8-13.9A9 9 0 0 1 29.400 12 6 6 0 0 1 31 24z" fill="#47682C"/><g stroke="#47682C" stroke-width="2.4" stroke-linecap="round"><path d="M13 29l-2 5M21 29l-2 5M29 29l-2 5"/></g></svg>',
-  NORMAL: '<svg width="42" height="38" viewBox="0 0 42 38" aria-hidden="true"><path d="M10 28a7 7 0 0 1 .8-13.9A9 9 0 0 1 28.400 16 6 6 0 0 1 30 28z" fill="none" stroke="#47682C" stroke-width="2.6"/></svg>'};
+  SECO: '<svg width="38" height="38" viewBox="0 0 38 38" aria-hidden="true"><circle cx="19" cy="19" r="7" fill="var(--oliva)"/><g stroke="var(--oliva)" stroke-width="2.4" stroke-linecap="round"><path d="M19 4v5M19 29v5M4 19h5M29 19h5M8.4 8.4l3.5 3.5M26.1 26.1l3.5 3.5M8.4 29.6l3.5-3.5M26.1 11.9l3.5-3.5"/></g></svg>',
+  CHUVOSO: '<svg width="42" height="38" viewBox="0 0 42 38" aria-hidden="true"><path d="M11 24a7 7 0 0 1 .8-13.9A9 9 0 0 1 29.400 12 6 6 0 0 1 31 24z" fill="var(--oliva)"/><g stroke="var(--oliva)" stroke-width="2.4" stroke-linecap="round"><path d="M13 29l-2 5M21 29l-2 5M29 29l-2 5"/></g></svg>',
+  NORMAL: '<svg width="42" height="38" viewBox="0 0 42 38" aria-hidden="true"><path d="M10 28a7 7 0 0 1 .8-13.9A9 9 0 0 1 28.400 16 6 6 0 0 1 30 28z" fill="none" stroke="var(--oliva)" stroke-width="2.6"/></svg>'};
 function renderClima() {
   const sel = $('#sel-clima');
   if (!sel.options.length) {
@@ -267,7 +267,7 @@ function renderClima() {
   if (S.mapa) { renderMapa(c, fim); return; }
   const dsem = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'];
   const mx = Math.max(10, ...c.dias);
-  const barras = c.dias.map((v, i) => { const h = Math.max(2, 34 * v / mx); const dd = addDays(fim, i - 6); return `<g><rect x="${6 + i * 22}" y="${40 - h}" width="14" height="${h}" rx="3" fill="#47682C"><title>${dm(dd)}: ${nf1.format(v)} mm</title></rect><text x="${13 + i * 22}" y="52" text-anchor="middle" font-size="10" fill="#46524D">${dsem[(dd.getDay() + 6) % 7]}</text></g>`; }).join('');
+  const barras = c.dias.map((v, i) => { const h = Math.max(2, 34 * v / mx); const dd = addDays(fim, i - 6); return `<g><rect x="${6 + i * 22}" y="${40 - h}" width="14" height="${h}" rx="3" fill="var(--oliva)"><title>${dm(dd)}: ${nf1.format(v)} mm</title></rect><text x="${13 + i * 22}" y="52" text-anchor="middle" font-size="10" fill="var(--cinza-2)">${dsem[(dd.getDay() + 6) % 7]}</text></g>`; }).join('');
   $('#clima-corpo').innerHTML = `
     <div class="estado">${ICO_CL[c.cen]}<span>${c.cen}</span></div>
     <div class="dias num">${nf0.format(c.dsc)} ${c.dsc === 1 ? 'dia' : 'dias'} sem chuva seguidos</div>
@@ -293,11 +293,11 @@ function renderMain(F, idx) {
     proj[idx.length - 1] = prev[idx.length - 1];
   }
   const fmt = (v, t) => rs ? (v >= 1000 ? 'R$ ' + nf0.format(v / 1000) + (t ? ' mil' : ' mil') : 'R$ ' + nf0.format(v)) : nf0.format(v);
-  const series = [{name: 'Real', color: '#47682C', w: 2.6, values: real}, {name: 'Previsto', color: '#080F0F', dash: '6 4', w: 1.9, values: prev}];
-  if (hasProj) series.push({name: 'Projeção', color: '#5E6B66', dash: '2 4', w: 2, values: proj});
-  const leg = [{name: 'Real', color: '#47682C', w: 2.6}, {name: 'Previsto (método por padrão de demanda)', color: '#080F0F', dash: '6 4', w: 1.9}];
-  if (hasProj) leg.push({name: 'Projeção das próximas 8 semanas', color: '#5E6B66', dash: '2 4', w: 2});
-  leg.push({name: 'Semana chuvosa', color: '#E7EEDD', faixa: 1});
+  const series = [{name: 'Real', color: 'var(--oliva)', w: 2.6, values: real}, {name: 'Previsto', color: 'var(--tinta)', dash: '6 4', w: 1.9, values: prev}];
+  if (hasProj) series.push({name: 'Projeção', color: 'var(--cinza)', dash: '2 4', w: 2, values: proj});
+  const leg = [{name: 'Real', color: 'var(--oliva)', w: 2.6}, {name: 'Previsto (método por padrão de demanda)', color: 'var(--tinta)', dash: '6 4', w: 1.9}];
+  if (hasProj) leg.push({name: 'Projeção das próximas 8 semanas', color: 'var(--cinza)', dash: '2 4', w: 2});
+  leg.push({name: 'Semana chuvosa', color: 'var(--oliva-claro)', faixa: 1});
   legenda($('#leg-main'), leg);
   lineChart(host, {labels, tabLabels: tabL, series, yFmt: fmt, height: 290, shade: idx.map(k => D.meta.cen[k] === 'chuvoso').concat(hasProj ? Array(H).fill(false) : []),
     divisor: hasProj ? idx.length - 1 : null, divRot: 'projeção', aria: `Consumo real e previsto por semana, ${rs ? 'em reais' : 'em unidades'}`,
@@ -393,14 +393,14 @@ function renderBench(F, idx) {
         return `<tr class="clicavel ${S.forn === r.f.id ? 'sel' : ''}" tabindex="0" data-f="${r.f.id}"><td><b>${esc(nomeForn(r.f))}</b></td><td class="r num">${r.n}</td>
         <td class="r num"><b>${nf1.format(r.l8)} d</b><br><span class="${dv > .3 ? 'pior' : dv < -.3 ? 'melhor' : 'neutro'}" style="font-size:12px">${dv > .3 ? '▲' : dv < -.3 ? '▼' : '■'} ${nf1.format(Math.abs(dv))} d ${dv > .3 ? 'acima' : dv < -.3 ? 'abaixo' : 'em linha'}</span></td>
         <td class="r num">${r.f.prom} d</td><td class="r num">${nf1.format(r.f.bench)} d</td><td class="r num">${pc(r.a8)}<br><span class="nota">ref. 93,0%</span></td>
-        <td><span class="tend ${tl[1]}">${tl[0]}</span> <span class="nota num">(${r.sl > 0 ? '+' : ''}${nf1.format(r.sl)} d / 10 sem.)</span><br>${spark(r.f.lt, 150, 26, r.sl > .5 ? '#B3261E' : '#47682C')}</td></tr>`; }).join('') + '</tbody></table></div><p class="nota">Clique em um fornecedor para filtrar o painel inteiro. Ordenado do maior para o menor desvio contra a referência. Em vermelho, lead time com piora de mais de 0,5 dia a cada 10 semanas.</p>';
+        <td><span class="tend ${tl[1]}">${tl[0]}</span> <span class="nota num">(${r.sl > 0 ? '+' : ''}${nf1.format(r.sl)} d / 10 sem.)</span><br>${spark(r.f.lt, 150, 26, r.sl > .5 ? '#B3261E' : 'var(--oliva)')}</td></tr>`; }).join('') + '</tbody></table></div><p class="nota">Clique em um fornecedor para filtrar o painel inteiro. Ordenado do maior para o menor desvio contra a referência. Em vermelho, lead time com piora de mais de 0,5 dia a cada 10 semanas.</p>';
   } else if (S.tab === 'rup') {
     const base = filtrados(true), all = [...Array(NW).keys()];
     const wref = base.length ? mean(base.map(i => FAM[i.fam].ref.rup)) : 0;
     const sr = all.map(k => taxaRup(base, [k])), sm = sr.map((_, i) => i < 3 ? null : mean(sr.slice(i - 3, i + 1)));
     el.innerHTML = `<div class="duas"><div><div class="leg" id="lg-rup"></div><div class="chart" id="ch-rup"></div><p class="nota">Taxa de ruptura, média móvel de 4 semanas, para os itens do filtro. A linha tracejada é a referência setorial fictícia ponderada pelas famílias.</p></div><div id="tb-fam"></div></div>`;
-    legenda($('#lg-rup'), [{name: 'Taxa de ruptura (média móvel 4 sem.)', color: '#47682C', w: 2.6}, {name: 'Referência setorial', color: '#080F0F', dash: '6 4', w: 1.8}]);
-    if (base.length) lineChart($('#ch-rup'), {labels: all.map(k => dm(WK[k])), tabLabels: all.map(k => dm(WK[k]) + ' a ' + dm(addDays(WK[k], 6))), series: [{name: 'Taxa de ruptura', color: '#47682C', w: 2.6, values: sm}, {name: 'Referência', color: '#080F0F', dash: '6 4', w: 1.8, values: all.map(() => wref)}],
+    legenda($('#lg-rup'), [{name: 'Taxa de ruptura (média móvel 4 sem.)', color: 'var(--oliva)', w: 2.6}, {name: 'Referência setorial', color: 'var(--tinta)', dash: '6 4', w: 1.8}]);
+    if (base.length) lineChart($('#ch-rup'), {labels: all.map(k => dm(WK[k])), tabLabels: all.map(k => dm(WK[k]) + ' a ' + dm(addDays(WK[k], 6))), series: [{name: 'Taxa de ruptura', color: 'var(--oliva)', w: 2.6, values: sm}, {name: 'Referência', color: 'var(--tinta)', dash: '6 4', w: 1.8, values: all.map(() => wref)}],
       yFmt: v => nf1.format(v) + '%', height: 250, aria: 'Taxa de ruptura por semana contra a referência setorial', yminmax: wref});
     const fams = D.familias.map(f => { const b = filtrados(true, false, true).filter(i => i.fam === f.id); return {f, b, rup: taxaRup(b, idx), ac: b.length && idx.length ? 100 - wape(b, idx) : null, cob: b.length ? sum(b.map(i => i.saldo * i.custo)) / sum(b.map(i => i.df * i.custo)) : null}; }).filter(r => r.b.length);
     const mx = Math.max(8, ...fams.map(r => Math.max(r.rup ?? 0, r.f.ref.rup))) * 1.1;
@@ -507,9 +507,9 @@ function abrirItem(id) {
       <dt>Lote de compra</dt><dd>${nf0.format(it.lote)} un</dd><dt>Sugestão</dt><dd>${it.qtd ? nf0.format(it.qtd) + ' un · ' + brl.format(it.valor) : 'nenhuma compra'}</dd><dt>Semanas com falta</dt><dd>${it.nrup} de ${NW}</dd></dl>
     <h3>Erro de previsão (WAPE, histórico completo)</h3><p class="num">${MET.map((n, i) => `${i === bi ? '<b>' : ''}${n.replace(' (4 sem.)', '')}: ${pc(w[i])}${i === bi ? ' ✓</b>' : ''}`).join(' · ')}</p>
     <p class="nota">Método em uso: ${it.metodo === 'SBA' ? 'Croston/SBA' : 'suavização exponencial'}, conforme o padrão de demanda.</p>`;
-  legenda($('#lg-it'), [{name: 'Real', color: '#47682C', w: 2.6}, {name: 'Previsto', color: '#080F0F', dash: '6 4', w: 1.9}]);
+  legenda($('#lg-it'), [{name: 'Real', color: 'var(--oliva)', w: 2.6}, {name: 'Previsto', color: 'var(--tinta)', dash: '6 4', w: 1.9}]);
   dg.showModal();
-  lineChart($('#ch-it'), {labels: all.map(k => dm(WK[k])), tabLabels: all.map(k => dm(WK[k]) + ' a ' + dm(addDays(WK[k], 6))), series: [{name: 'Real', color: '#47682C', w: 2.6, values: it.r}, {name: 'Previsto', color: '#080F0F', dash: '6 4', w: 1.9, values: it.p}],
+  lineChart($('#ch-it'), {labels: all.map(k => dm(WK[k])), tabLabels: all.map(k => dm(WK[k]) + ' a ' + dm(addDays(WK[k], 6))), series: [{name: 'Real', color: 'var(--oliva)', w: 2.6, values: it.r}, {name: 'Previsto', color: 'var(--tinta)', dash: '6 4', w: 1.9, values: it.p}],
     yFmt: v => nf0.format(v), height: 200, shade: all.map(k => D.meta.cen[k] === 'chuvoso'), aria: 'Consumo real e previsto do item'});
   $('#fx-item').onclick = () => dg.close(); $('#fx-item').focus();
 }

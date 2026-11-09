@@ -1,9 +1,9 @@
 
 :root{
-  --oliva:#47682C; --oliva-claro:#E7EEDD; --fundo:#F4F7EF; --tinta:#080F0F;
-  --cinza:#5E6B66; --cinza-2:#46524D; --borda:#D5DAD7; --branco:#fff;
-  --crit:#B3261E; --aten:#C98A00; --ok:#47682C;
-  --raio:14px; --sombra:0 1px 0 rgba(8,15,15,.04);
+  --oliva:#183658; --oliva-claro:#E8F1FC; --fundo:#F3F7FC; --tinta:#142539;
+  --cinza:#52657A; --cinza-2:#3D5168; --borda:#CEDCEB; --branco:#fff;
+  --crit:#B3261E; --aten:#C98A00; --ok:#32624B;
+  --raio:14px; --sombra:0 5px 18px rgba(84,151,225,.17);
   --fonte:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
 }
 *{box-sizing:border-box}
@@ -35,7 +35,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .btn.peq{padding:3px 9px;font-size:12px}
 
 /* filtros */
-.filtros{position:sticky;top:0;z-index:20;background:rgba(244,247,239,.96);backdrop-filter:blur(4px);border-bottom:1px solid var(--borda);margin-top:12px}
+.filtros{position:sticky;top:0;z-index:20;background:var(--fundo);backdrop-filter:blur(4px);border-bottom:1px solid var(--borda);margin-top:12px}
 .filtros .wrap{padding-top:10px;padding-bottom:10px}
 .linha-filtros{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px 10px;align-items:end}
 .campo label{display:block;font-size:11.5px;color:var(--cinza);font-weight:600;margin:0 0 2px 2px;text-transform:uppercase;letter-spacing:.3px}
@@ -47,7 +47,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .nivel b{min-width:46px;text-align:right}
 
 main{padding:16px 0 40px}
-.aviso{background:var(--oliva-claro);border:1px solid #cddbbb;border-radius:12px;padding:8px 12px;font-size:13px;color:var(--cinza-2);margin-bottom:14px}
+.aviso{background:var(--oliva-claro);border:1px solid var(--borda);border-radius:12px;padding:8px 12px;font-size:13px;color:var(--cinza-2);margin-bottom:14px}
 .aviso b{color:var(--tinta)}
 
 /* KPIs */
@@ -84,7 +84,7 @@ main{padding:16px 0 40px}
 .leg span{display:inline-flex;align-items:center;gap:6px}
 .chart{position:relative}
 .chart svg{display:block;width:100%;height:auto;overflow:visible}
-.chart .tip{position:absolute;pointer-events:none;background:#fff;border:1px solid var(--cinza);border-radius:10px;padding:7px 10px;font-size:12.5px;box-shadow:0 4px 14px rgba(8,15,15,.16);z-index:5;min-width:150px;max-width:250px}
+.chart .tip{position:absolute;pointer-events:none;background:#fff;border:1px solid var(--cinza);border-radius:10px;padding:7px 10px;font-size:12.5px;box-shadow:var(--sombra);z-index:5;min-width:150px;max-width:250px}
 .chart .tip b{display:block;margin-bottom:3px}
 .chart .tip i{display:inline-block;width:14px;height:0;border-top:3px solid;margin-right:6px;vertical-align:middle}
 .chart .tip .lin{display:flex;justify-content:space-between;gap:10px}
@@ -107,7 +107,7 @@ tbody tr.sel{background:var(--oliva-claro)}
 .clima .linha{font-size:13.5px;color:var(--cinza-2)}
 .clima .msg{margin:10px 0 6px;font-size:14.5px}
 .clima .mini{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}
-.clima .mini div{background:#fff;border:1px solid #cddbbb;border-radius:10px;padding:5px}
+.clima .mini div{background:#fff;border:1px solid var(--borda);border-radius:10px;padding:5px}
 .clima .mini b{display:block;font-size:17px}
 .clima .mini span{font-size:11.5px;color:var(--cinza-2)}
 .clima select{border:1.5px solid var(--cinza);border-radius:9px;padding:4px 8px;background:#fff;font-size:12.5px}

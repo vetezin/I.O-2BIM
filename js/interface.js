@@ -75,12 +75,12 @@ function decisoesFiltradas() {
 }
 function renderMapa(c, fim) {
   $('#clima-corpo').innerHTML = `<figure class="mapa"><svg viewBox="0 0 360 220" role="img" aria-label="Mapa esquemático da usina fictícia, sem localização geográfica real">
-    <rect width="360" height="220" rx="12" fill="#e7eedd"/><path d="M0 140Q90 60 150 130T360 80" stroke="#a6c8db" stroke-width="18" fill="none"/>
+    <rect width="360" height="220" rx="12" fill="var(--oliva-claro)"/><path d="M0 140Q90 60 150 130T360 80" stroke="#a6c8db" stroke-width="18" fill="none"/>
     <path d="M35 0L120 220M0 45L360 180M260 0L230 220" stroke="white" stroke-width="9"/>
-    <circle cx="180" cy="100" r="40" fill="${c.cen === 'CHUVOSO' ? '#a6c8db' : '#d6dfab'}" stroke="#47682C" stroke-width="2"/>
-    <text x="180" y="98" text-anchor="middle" fill="#080F0F" font-size="15">${nf1.format(c.mm)} mm</text>
-    <text x="180" y="117" text-anchor="middle" fill="#080F0F" font-size="12">${nf1.format(c.t)} °C</text>
-    <text x="180" y="165" text-anchor="middle" fill="#080F0F" font-size="16">Usina Alcar · ${c.cen}</text></svg>
+    <circle cx="180" cy="100" r="40" fill="${c.cen === 'CHUVOSO' ? '#a6c8db' : '#C8DAEF'}" stroke="var(--oliva)" stroke-width="2"/>
+    <text x="180" y="98" text-anchor="middle" fill="var(--tinta)" font-size="15">${nf1.format(c.mm)} mm</text>
+    <text x="180" y="117" text-anchor="middle" fill="var(--tinta)" font-size="12">${nf1.format(c.t)} °C</text>
+    <text x="180" y="165" text-anchor="middle" fill="var(--tinta)" font-size="16">Usina Alcar · ${c.cen}</text></svg>
     <figcaption class="nota">Mapa demonstrativo, sem geolocalização. Dados simulados dos 7 dias até ${dm(fim)}; não é radar ou previsão em tempo real.</figcaption></figure><p>${MSG_CL[c.cen]}</p>`;
 }
 

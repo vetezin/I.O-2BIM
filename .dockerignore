@@ -1,6 +1,9 @@
 *
 !serve.cjs
+!gemini.cjs
 !*.html
 !css/
 !js/
 !dashboard/
+API_KEY
+API_KEY.*

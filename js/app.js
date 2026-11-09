@@ -1,6 +1,6 @@
 "use strict";
 /* ============================================================ dados */
-const D = DADOS;
+const D = typeof module === 'object' && module.exports ? require('./dados.js') : DADOS;
 const WK = D.meta.semanas.map(s => new Date(s + 'T12:00:00'));
 const NW = WK.length, R = D.meta.R;
 const REFDATE = new Date(D.meta.ref + 'T12:00:00');
@@ -435,7 +435,7 @@ const ACERVO = [
   {k: ['lead time', 'prazo de entrega'], t: 'Lead time', r: '<p>É o tempo entre a decisão de comprar e a chegada do item. Aqui ele soma o prazo do fornecedor (Lf) e o tempo de aprovação interna (La), e usa o valor realizado, não o prometido.</p>'}];
 const respostas = [];
 function achaItem(q) {
-  const c = q.match(/al-\d{6}/i); if (c) return ITENS.filter(i => i.cod.toLowerCase() === c[0].toLowerCase());
+  const c = q.match(/\bal-[a-z0-9-]+/i); if (c) return ITENS.filter(i => i.cod.toLowerCase() === c[0].toLowerCase());
   const stop = new Set(['de', 'da', 'do', 'ref', 'tipo', 'com', 'para', 'item']);
   let melhor = 0, r = [];
   for (const it of ITENS) { const tk = norm(it.nome).replace(/[()]/g, '').split(/\s+/).filter(t => t.length > 2 && !stop.has(t)); const n = tk.filter(t => q.includes(t)).length; const min = Math.min(2, tk.length);
@@ -445,7 +445,8 @@ function achaItem(q) {
 function achaForn(q) { return D.fornecedores.find(f => q.includes(norm(f.nome.split(' ')[0])) && norm(f.nome.split(' ')[0]).length >= 4); }
 const meta = (o, fn) => `<div class="meta">Origem: ${o}${fn ? ' · função: <code>' + fn + '</code>' : ''}</div>`;
 function linhaItem(it) { return `<li>${stl(it.risco)} <b>${esc(it.nome)}</b> (${it.cod}): saldo ${nf0.format(it.saldo)}, ${it.rd == null ? 'sem ruptura em 120 dias' : it.rd === 0 ? 'já em falta' : 'ruptura em ' + rdTxt(it)}</li>`; }
-function agente(qq) {
+const AJUDA_CHAT = `<p>Ainda não sei responder isso no protótipo. Posso ajudar com:</p><ul><li><b>Conceitos</b>: estoque de segurança, ponto de pedido, nível de serviço, curva ABC, demanda intermitente, WAPE, lead time, LGPD.</li><li><b>Sobre a usina</b>: item mais perto de faltar, itens críticos, lead time de um fornecedor, risco ou previsão de um item (cite o código AL-… ou o nome).</li><li><b>Mista</b>: “meu estoque de segurança está coerente com a teoria?”</li></ul>${meta('nenhuma função aplicável', '')}`;
+function agente(qq, semResposta = AJUDA_CHAT) {
   const q = norm(qq), F = filtrados(false);
   const it = achaItem(q), fo = achaForn(q);
   const lista = (a, n) => '<ul>' + a.slice(0, n).map(linhaItem).join('') + '</ul>';
@@ -479,12 +480,135 @@ function agente(qq) {
   }
   const ac = ACERVO.find(a => a.k.some(k => q.includes(k)) || (/como (se )?calcul/.test(q) && a.t === 'Estoque de segurança' && /estoque|seguranca/.test(q)));
   if (ac) return `${ac.r}${meta('acervo externo (simulado no protótipo): ' + ac.t, '')}`;
-  return `<p>Ainda não sei responder isso no protótipo. Posso ajudar com:</p><ul><li><b>Conceitos</b>: estoque de segurança, ponto de pedido, nível de serviço, curva ABC, demanda intermitente, WAPE, lead time, LGPD.</li><li><b>Sobre a usina</b>: item mais perto de faltar, itens críticos, lead time de um fornecedor, risco ou previsão de um item (cite o código AL-… ou o nome).</li><li><b>Mista</b>: “meu estoque de segurança está coerente com a teoria?”</li></ul>${meta('nenhuma função aplicável', '')}`;
+  return semResposta;
 }
+
+const FILTROS_CHAT = ['fam', 'item', 'forn', 'pad', 'abc', 'risco'];
+const ORIGEM_CHAT = 'Base fictícia de Home e Compras (js/dados.js) e regras do painel Alcar';
+const FORA_DO_ESCOPO = 'Posso consultar estoque, compras e suprimentos do painel. Informe o código de um item ou pergunte sobre os conceitos de estoque.';
+
+function consultarChat(pergunta, ultimoItem, filtros) {
+  const q = norm(pergunta);
+  if (/^(escreva|invente|traduza|gere|crie)\b|\b(poema|piada|receita)\b/.test(q)) {
+    return { texto: FORA_DO_ESCOPO };
+  }
+  const codigos = new Set(q.match(/\bal-[a-z0-9-]+/g));
+  const itens = achaItem(q);
+  const metricas = [
+    [/\bsaldo\b/, 'saldo', x => nf0.format(x.saldo) + ' un'],
+    [/ponto de pedido/, 'pontoDePedido', x => nf0.format(Math.ceil(x.PP)) + ' un'],
+    [/estoque de seguranca/, 'estoqueDeSeguranca', x => nf1.format(x.SS) + ' un'],
+    [/lead time|prazo/, 'prazoDeReposicao', x => nf1.format(x.L) + ' dias'],
+    [/previs|consumo/, 'previsao', x => nf1.format(x.fn) + ' un/semana'],
+    [/risco|ruptura|falt/, 'risco', x => RNOME[x.risco]],
+    [/risco|ruptura|falt/, 'ruptura', x => x.rd == null ? 'sem ruptura prevista em 120 dias' : rdTxt(x)],
+    [/compra|comprar|quanto pedir/, 'sugestaoDeCompra', x => x.qtd ? nf0.format(x.qtd) + ' un (' + brl.format(x.valor) + ')' : 'nenhuma compra sugerida'],
+    [/transito/, 'emTransito', x => x.tr ? x.tr.q + ' un em ' + x.tr.eta + ' dias' : 'nenhuma unidade em trânsito'],
+  ];
+  const solicitadas = metricas.filter(([padrao]) => padrao.test(q));
+  const resumo = /situacao|detalhes|status/.test(q) || codigos.has(q.trim());
+  const acompanhamento = /^e\s|\b(dele|desse item|deste item|dessa peca)\b/.test(q);
+  const definicao = /^(o que|como calcular|como se calcula|explique|me explique|defina)\b/.test(q);
+  const coletiva = /(mais perto|proximo|perto) de faltar|mais critico|maior risco|itens criticos|lista de criticos|quantos criticos/.test(q);
+  const codigoAnterior = typeof ultimoItem === 'string' && /^AL-\d{6}$/.test(ultimoItem) ? ultimoItem : '';
+  const anterior = codigoAnterior && ITENS.find(i => i.cod === codigoAnterior);
+
+  for (const campo of FILTROS_CHAT) S[campo] = typeof filtros?.[campo] === 'string' ? filtros[campo] : '';
+  const nivel = filtros?.nivel;
+  S.nivel = Number.isFinite(nivel) && nivel >= 85 && nivel <= 99.5 && nivel * 2 % 1 === 0 ? nivel : 95;
+  S.z = calcular(S.nivel / 100);
+
+  if (codigos.size > 1 || itens.length > 1) {
+    return { texto: 'Encontrei mais de um item. Informe um código AL-… por pergunta.' };
+  }
+  if (codigos.size && !itens.length) return { texto: 'Não encontrei esse código de item na base fictícia.' };
+
+  const fornecedor = /lead time|prazo/.test(q) && achaForn(q);
+  const consultaFornecedor = /\bfornecedor\b|\b(?:lead time|prazo(?: de entrega| de reposicao)?)\s+d[aeo]\s+(?!item\b|peca\b)/.test(q);
+  if (consultaFornecedor && !definicao && !fornecedor && !itens.length) {
+    return { texto: 'Não encontrei esse fornecedor na base fictícia. Informe o nome usado no painel.' };
+  }
+  if (/quantos(?: itens)? criticos/.test(q)) {
+    const itensCriticos = filtrados(false).filter(i => i.risco === 'crit').length;
+    return { dados: { itensCriticos }, texto: `Itens críticos no recorte: ${itensCriticos}.`, origem: ORIGEM_CHAT };
+  }
+  const coerencia = /coerente|coerencia|esta certo|esta adequado/.test(q) && /seguranca/.test(q);
+  const alvo = itens[0] || (acompanhamento && !definicao && anterior);
+  if (!coletiva && !fornecedor && !coerencia && alvo && (solicitadas.length || resumo)) {
+    const dados = { item: alvo.cod, nome: alvo.nome };
+    const campos = resumo ? metricas : solicitadas;
+    for (const [, campo, valor] of campos) dados[campo] = valor(alvo);
+    const texto = `${alvo.nome} (${alvo.cod})\n` + campos
+      .map(([, campo]) => campo.replace(/[A-Z]/g, letra => ' ' + letra.toLowerCase()) + ': ' + dados[campo])
+      .join('\n');
+    return { dados, texto, origem: ORIGEM_CHAT, ultimoItem: alvo.cod };
+  }
+
+  if (!alvo && !definicao && !coletiva && !fornecedor && !coerencia &&
+      /\bsaldo\b|ponto de pedido|desse item|deste item|qual item|do item|da peca/.test(q)) {
+    return { texto: 'Informe o código AL-… ou o nome do item para consultar a base.' };
+  }
+
+  const resposta = agente(pergunta, null);
+  if (!resposta) return { texto: FORA_DO_ESCOPO };
+  // Só os textos das regras locais chegam aqui. A pergunta e as tags ficam fora do recorte.
+  const texto = resposta.split('<div class="meta">')[0]
+    .replace(/<\/(?:p|li)>|<br>/g, '\n').replace(/<[^>]+>/g, '')
+    .replace(/&gt;/g, '>').replace(/&amp;/g, '&').trim();
+  if (texto === 'Não há itens no recorte para comparar.') return { texto };
+  const fonte = resposta.match(/<div class="meta">Origem: ([^<]+?)(?: · função: |<\/div>)/)?.[1];
+  return { dados: { resultado: texto }, texto, origem: fonte?.startsWith('acervo') ? fonte : ORIGEM_CHAT, ultimoItem: itens[0]?.cod };
+}
+
+if (typeof module === 'object' && module.exports) module.exports = { consultarChat };
+
+let ultimoItemChat, filaChat = Promise.resolve();
 function conversa(q) {
   const c = $('#chat'); c.insertAdjacentHTML('beforeend', `<div class="msg-u">${esc(q)}</div>`);
   const a = document.createElement('div'); a.className = 'msg-a'; a.innerHTML = '<p class="nota">consultando…</p>'; c.appendChild(a); c.scrollTop = c.scrollHeight;
-  setTimeout(() => { a.innerHTML = agente(q); c.scrollTop = c.scrollHeight; }, 350);
+  const filtros = Object.fromEntries(FILTROS_CHAT.map(campo => [campo, S[campo]]));
+  filtros.nivel = S.nivel;
+  filaChat = filaChat.then(async () => {
+    let resposta;
+    if (location.protocol === 'http:' || location.protocol === 'https:') {
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pergunta: q, ultimoItem: ultimoItemChat, filtros }),
+          signal: AbortSignal.timeout(16000),
+        });
+        if (res.headers.get('Content-Type')?.startsWith('application/json')) resposta = await res.json();
+      } catch { /* hospedagem estática ou servidor indisponível */ }
+    }
+    if (typeof resposta?.texto === 'string') {
+      const texto = document.createElement('p');
+      texto.style.whiteSpace = 'pre-line';
+      texto.textContent = resposta.texto;
+      a.replaceChildren(texto);
+      if (resposta.fatos) {
+        const fatos = document.createElement('p');
+        fatos.style.whiteSpace = 'pre-line';
+        fatos.textContent = 'Dados do painel\n' + resposta.fatos;
+        a.append(fatos);
+      }
+      if (resposta.origem) {
+        const origem = document.createElement('div');
+        origem.className = 'meta';
+        origem.textContent = 'Origem: ' + resposta.origem + (resposta.modo === 'gemini' ? ' · redação: Gemini' : '');
+        a.append(origem);
+      }
+      if (resposta.ultimoItem) ultimoItemChat = resposta.ultimoItem;
+    } else {
+      a.innerHTML = agente(q);
+      if (resposta?.aviso) {
+        const aviso = document.createElement('p');
+        aviso.textContent = resposta.aviso;
+        a.prepend(aviso);
+      }
+    }
+    c.scrollTop = c.scrollHeight;
+  });
 }
 
 /* ============================================================ detalhe do item e sobre */
@@ -531,7 +655,7 @@ function abrirSobre() {
   <h3>3. Dados pessoais no escopo</h3>
   <ul><li>Fornecedores pessoa física: um dos 12 fornecedores simulados.</li><li>Colaboradores requisitantes: previstos no SAP, <b>não exibidos</b> neste protótipo.</li><li>Retenção e descarte: prazo a definir com o jurídico antes de qualquer uso real.</li></ul>
   <h3>4. O que este protótipo não faz</h3>
-  <ul><li>Não há autenticação real: o perfil é um seletor de demonstração.</li><li>O registro de decisões fica só neste navegador (armazenamento local).</li><li>O agente de IA usa regras locais, sem modelo de linguagem nem RAG.</li></ul>
+  <ul><li>Não há autenticação real: o perfil é um seletor de demonstração.</li><li>O registro de decisões fica só neste navegador (armazenamento local).</li><li>A consulta usa regras do painel. Com Gemini configurado no servidor, apenas o recorte fictício da consulta é usado para redigir a resposta.</li></ul>
   <h3>5. Metodologia dos cálculos</h3>
   <p class="formula num">L = Lf + La<br>SS = z · √((R+L)·σd² + d̄²·σL²)<br>PP = d̄ · (R+L) + SS</p>
   <ul><li><b>Parâmetros:</b> d̄ e σd vêm das últimas ${ULT} semanas (desvio semanal ÷ √7). Lf é o lead time realizado do fornecedor nas últimas ${ULT} semanas, La é o tempo médio de aprovação e σL combina os desvios de Lf e La. R = ${R} dias (revisão semanal).</li>

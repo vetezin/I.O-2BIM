@@ -1,4 +1,6 @@
 node_modules/
+/API_KEY
+/API_KEY.*
 test-results/
 *.xlsx
 *.png

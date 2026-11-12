@@ -82,7 +82,7 @@ Em 09/11/2026, os 12 testes de integração simulada passaram. No Chrome com Doc
 - Os seis indicadores da Home têm botão de informação com significado e fórmula. As explicações abrem por mouse, teclado ou toque; Escape fecha.
 - Compras possui filtro de criticidade (Crítico/Atenção), preservado na navegação e recarga e removido por Limpar filtros.
 - O cabeçalho acompanha a rolagem nas quatro telas; a posição dos filtros considera a altura real do cabeçalho.
-- Home, Compras, Decisões e Dashboard usam a mesma disposição agrupada dos links de navegação.
+- Home, Compras, Decisões e Dashboard usam menu lateral compartilhado, recolhido no celular com botão Menu. No Dashboard, os seis atalhos ficam no cabeçalho, separados por `»`, com seleção azul acompanhando clique e rolagem.
 - A consulta de IA abre uma caixa flutuante expansível, sem bloquear a página. Fechar ou pressionar Escape dentro da consulta preserva a conversa para reabertura na mesma página.
 
 Verificação adicional: `node tests/ajustes-home.cjs` (mesma configuração de Playwright e Chrome dos demais testes).
@@ -106,7 +106,7 @@ Navegação e consulta flutuante: `node tests/navegacao-chat.cjs`.
 - Filtros de item, fornecedor, tipo, safra, demanda, ABC, risco e nível de serviço preservados ao navegar. As datas filtram o consumo histórico; risco e compras representam o estoque atual. As decisões atuais continuam visíveis mesmo fora do período histórico, respeitando os filtros dos itens.
 - Consumo exportado como `.xlsx` com valores numéricos, respeitando datas, itens e unidade selecionada. A planilha contém o histórico real/previsto do recorte, sem as oito semanas de projeção ilustrativa.
 - Card climático alterna com um mapa esquemático da usina fictícia. Não há localização ou serviço meteorológico definido no documento: o mapa usa os mesmos dados simulados, sem radar nem previsão real.
-- Compras e decisões possuem páginas próprias, com links no cabeçalho. A Home contém um resumo e botão para abrir as compras. Aceites, recusas, aprovações e devoluções aparecem no histórico.
+- Compras e decisões possuem páginas próprias, com links no menu lateral. A Home contém um resumo e botão para abrir as compras. Aceites, recusas, aprovações e devoluções aparecem no histórico.
 - Risco ocupa a largura disponível; risco e benchmarking possuem controles de recolher/expandir.
 - Agente acessível por botão flutuante que expande uma caixa de conversa sem bloquear a página, com fechamento por botão ou Escape.
 

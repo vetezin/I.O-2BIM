@@ -17,7 +17,7 @@ Nova página `dashboard.html`, com seis painéis, implementada com a ordem de pr
 1. **Filtros:** cada gráfico apresenta os filtros que não se aplicam. Fornecedor destaca os gráficos de fornecedores; família destaca risco/capital e benchmarking. Estoque é fotografia e não reage ao período. Fila e item seguem os filtros previstos. O quadro climático atual permanece fixo na data de posição.
 2. **Escalas sem zero:** serviço, acurácia e aprovação semanais, inclinação de benchmarking e sparklines usam escala automática e mostram aviso. Barras partem de zero, incluindo valores negativos em torno da linha de zero se ocorrerem.
 3. **Sem armazenamento:** leitura e escrita de `localStorage` têm tratamento de exceções. As decisões continuam em memória e a página informa quando não podem ser persistidas. Nenhum usuário/nome/e-mail é armazenado; apenas perfil e justificativa informada.
-4. **Aceite:** passaram os testes numéricos e funcionais abaixo; não ficaram testes essenciais pendentes. As ambiguidades do contrato estão documentadas nesta página e no plano.
+4. **Aceite:** passaram os testes numéricos e funcionais abaixo; não ficaram testes essenciais pendentes. As ambiguidades do contrato estão documentadas nesta página.
 
 ## Evidências
 

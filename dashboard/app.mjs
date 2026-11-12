@@ -42,7 +42,7 @@ function render() {
     ['p4',4,'Previsão e aprovação'],
     ['p6',6,'O clima influencia?'],
   ].filter(([name])=>typeof panels[name]==='function');
-  const steps=views.map(([,n,label])=>`<li><a href="#painel-${n}"${activePanel===`painel-${n}`?' aria-current="location"':''}>${label}</a></li>`).join('');
+  const steps=views.map(([,n,label],index)=>`<li>${index?'<span aria-hidden="true">»</span>':''}<a href="#painel-${n}"${activePanel===`painel-${n}`?' aria-current="location"':''}>${label}</a></li>`).join('');
   $('#dashboard-panel-nav').innerHTML=`<ol role="list">${steps}</ol>`;
   $('#dashboard').innerHTML=`<p class="notice">${core.esc(D.meta.aviso)} Os indicadores desta aba vêm do contrato do DW, versão ${core.esc(D.meta.versao_contrato)}. As telas anteriores preservam o protótipo original.</p>${views.map(([name])=>panels[name](D,F,decisions,items)).join('')}${decisionHistory()}`;
   const params=new URLSearchParams();for(const k of ['fam','janela','agricola','forn','abc','risco','padrao','nivel','indicador'])if(F[k]!==''&&F[k]!=null)params.set(k,F[k]);

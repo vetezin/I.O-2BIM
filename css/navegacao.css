@@ -10,7 +10,8 @@ body{padding-left:var(--largura-menu)}
 .menu-toggle{display:none}
 .topo .panel-nav{padding-top:4px;padding-bottom:4px}
 .topo .panel-nav ol{gap:8px;padding:0;margin:0;display:flex;flex-wrap:wrap;list-style:none}
-.topo .panel-nav li{display:block;max-width:100%}
+.topo .panel-nav li{display:flex;align-items:center;gap:8px;max-width:100%}
+.topo .panel-nav li > span{color:#C5D8EE;font-size:20px;font-weight:700}
 .topo .panel-nav a{display:block;padding:8px 12px;border:1px solid #B9D0ED;border-radius:8px;background:#E8F1FC;color:#183658;font-size:13px;font-weight:600;text-decoration:none;line-height:1.5}
 .topo .panel-nav a:hover{background:#CFE1F8}
 .topo .panel-nav a[aria-current="location"]{background:var(--azul-selecao);border-color:#8BB9F4;color:#fff;box-shadow:inset 0 -3px 0 #8BB9F4}

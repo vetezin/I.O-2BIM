@@ -18,6 +18,7 @@ const server = require('../serve.cjs');
       assert.equal(await page.locator('.topo .navegacao').count(), 0);
       assert.equal(await page.locator('.sidebar a[aria-current="page"]').getAttribute('href'), file);
       assert.equal(await page.locator('.sidebar a[aria-current="page"]').count(), 1);
+      await page.locator('main').waitFor({state: 'visible'});
       const boxes = await page.evaluate(() => ({side: document.querySelector('.sidebar').getBoundingClientRect().right, main: document.querySelector('main').getBoundingClientRect().left}));
       assert.ok(boxes.main >= boxes.side, file);
       for (const width of [390, 820, 1366]) {
@@ -39,6 +40,7 @@ const server = require('../serve.cjs');
     }
     await page.locator('[data-kpi=E1]').waitFor();
     assert.equal(await page.locator('.topo .panel-nav a').count(), 6);
+    assert.deepEqual(await page.locator('.panel-nav li > span[aria-hidden="true"]').allTextContents(), ['»', '»', '»', '»', '»']);
     assert.equal(await page.locator('#dashboard .panel-nav').count(), 0);
     assert.equal(await page.locator('.panel-nav a[aria-current="location"]').getAttribute('href'), '#painel-1');
     for (const n of [5, 3, 2, 4, 6, 1]) {

@@ -13,6 +13,7 @@ const server=require('../serve.cjs');
    for(const file of ['dashboard.html','index.html','compras.html','decisoes.html']){
     await page.goto(base+'/'+file);
     if(file==='dashboard.html')await page.locator('[data-kpi=E1]').waitFor();
+    if(width<=850)await page.getByRole('button',{name:'Menu',exact:true}).click();
     const layout=await page.locator('.navegacao').evaluate(nav=>{const box=nav.getBoundingClientRect();return [...nav.children].map(a=>{const r=a.getBoundingClientRect();return {x:r.x,y:r.y-box.y,width:r.width,height:r.height};});});
     if(reference)assert.deepEqual(layout,reference,`${file} ${width}: disposição dos links`);else reference=layout;
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
@@ -38,6 +39,7 @@ const server=require('../serve.cjs');
      assert.equal(await page.locator('#bt-agente').getAttribute('aria-expanded'),'false');
     }
     const next=file==='index.html'?'Compras':file==='compras.html'?'Decisões':file==='decisoes.html'?'Dashboard':'Home';
+    if(width<=850&&await page.getByRole('button',{name:'Menu',exact:true}).getAttribute('aria-expanded')==='false')await page.getByRole('button',{name:'Menu',exact:true}).click();
     await page.getByRole('link',{name:next,exact:true}).click();
    }
   }

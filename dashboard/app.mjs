@@ -1,7 +1,7 @@
 import * as core from './core.mjs';
 import * as panels from './paineis.mjs';
 import {graph,table} from './charts.mjs';
-let D,F,items,decisions=[],memoryOnly=false,lastFocus=null;
+let D,F,items,decisions=[],memoryOnly=false,lastFocus=null,activePanel='painel-1';
 const $=s=>document.querySelector(s);
 const storage=()=>{try{return window.localStorage;}catch{return undefined;}};
 const sel=(id,label,options,value)=>`<label for="${id}">${label}<select id="${id}">${options.map(([v,l])=>`<option value="${core.esc(v)}" ${String(v)===String(value)?'selected':''}>${core.esc(l)}</option>`).join('')}</select></label>`;
@@ -42,8 +42,9 @@ function render() {
     ['p4',4,'Previsão e aprovação'],
     ['p6',6,'O clima influencia?'],
   ].filter(([name])=>typeof panels[name]==='function');
-  const steps=views.map(([,n,label],index)=>`<li>${index ? '<span aria-hidden="true">»</span>' : ''}<a href="#painel-${n}">${label}</a></li>`).join('');
-  $('#dashboard').innerHTML=`<p class="notice">${core.esc(D.meta.aviso)} Os indicadores desta aba vêm do contrato do DW, versão ${core.esc(D.meta.versao_contrato)}. As telas anteriores preservam o protótipo original.</p><nav class="panel-nav" aria-label="Ordem de leitura dos painéis"><ol role="list">${steps}</ol></nav>${views.map(([name])=>panels[name](D,F,decisions,items)).join('')}${decisionHistory()}`;
+  const steps=views.map(([,n,label])=>`<li><a href="#painel-${n}"${activePanel===`painel-${n}`?' aria-current="location"':''}>${label}</a></li>`).join('');
+  $('#dashboard-panel-nav').innerHTML=`<ol role="list">${steps}</ol>`;
+  $('#dashboard').innerHTML=`<p class="notice">${core.esc(D.meta.aviso)} Os indicadores desta aba vêm do contrato do DW, versão ${core.esc(D.meta.versao_contrato)}. As telas anteriores preservam o protótipo original.</p>${views.map(([name])=>panels[name](D,F,decisions,items)).join('')}${decisionHistory()}`;
   const params=new URLSearchParams();for(const k of ['fam','janela','agricola','forn','abc','risco','padrao','nivel','indicador'])if(F[k]!==''&&F[k]!=null)params.set(k,F[k]);
   history.replaceState(null,'','#'+params);
   $('#filter-summary').innerHTML=`${core.weeks(D,F).length} semanas · posição ${core.date(D.meta.data_posicao)} · <a href="#painel-1">Voltar aos indicadores</a>`;
@@ -74,13 +75,32 @@ function openDecision(cod,action) {
   $('#decision').innerHTML=`<button class="close" data-close="decision">Fechar (Esc)</button><h2 id="decision-title">${{aceitou:'Aceitar',ajustou:'Ajustar',recusou:'Recusar'}[action]}: ${core.esc(item.nome)}</h2><form id="decision-form" data-cod="${core.esc(cod)}" data-action="${action}"><p>Sugerido: ${core.num(item.qtd)} un · ${core.money(item.valor)} · ${core.esc(item.risco)}</p><label for="quantity">Quantidade decidida<input id="quantity" type="number" min="0.001" step="any" value="${action==='recusou'?0:item.qtd}" ${action!=='ajustou'?'disabled':''} required></label><label for="why">Justificativa ${action==='aceitou'?'(opcional)':'(obrigatória)'}<input id="why" maxlength="500" ${action!=='aceitou'?'required':''}></label><p class="note">não escreva dados pessoais</p><p class="note">Perfil: ${core.esc(F.perfil)}. Data da sugestão: ${D.meta.data_posicao}; prazo contado desde essa data.</p><p class="error" id="decision-error" role="alert"></p><div class="dialog-actions"><button type="submit">Confirmar decisão</button></div></form>`;
   $('#decision').showModal();$('#decision input:not([disabled])').focus();
 }
+function selectPanel(id) {
+  activePanel=id;
+  for(const link of document.querySelectorAll('#dashboard-panel-nav a')) {
+    if(link.getAttribute('href')===`#${id}`)link.setAttribute('aria-current','location');
+    else link.removeAttribute('aria-current');
+  }
+}
 function events() {
+  let scrollPending=false;
+  window.addEventListener('scroll',()=>{
+    if(scrollPending)return;
+    scrollPending=true;
+    requestAnimationFrame(()=>{
+      scrollPending=false;
+      const offset=$('.topo').getBoundingClientRect().bottom+($('#filters')&&getComputedStyle($('#filters')).position==='sticky'?$('#filters').getBoundingClientRect().height:0)+20;
+      const sections=[...document.querySelectorAll('#dashboard .panel[id^="painel-"]')];
+      const current=sections.filter(section=>section.getBoundingClientRect().top<=offset).at(-1)||sections[0];
+      if(current)selectPanel(current.id);
+    });
+  },{passive:true});
   $('#filters').addEventListener('change',e=>{const k=e.target.id;if(!(k in F))return;F[k]=k==='nivel'?Number(e.target.value):e.target.value;F.page=0;if(k==='nivel')$('#nivel-value').textContent=core.num(F.nivel)+'%';render();});
   $('#filters').addEventListener('click',e=>{if(e.target.closest('#reset')){F=core.defaults(D);filters();render();}});
   $('#dashboard').addEventListener('change',e=>{if(e.target.id==='indicador')F.indicador=e.target.value;else if(e.target.id==='item')F.item=e.target.value;else if(e.target.id==='pareto')F.pareto=e.target.value;else return;render();});
   document.addEventListener('click',e=>{
     const anchor=e.target.closest('a[href^="#painel-"]');
-    if(anchor){e.preventDefault();document.getElementById(anchor.getAttribute('href').slice(1))?.scrollIntoView({block:'start'});return;}
+    if(anchor){e.preventDefault();const id=anchor.getAttribute('href').slice(1);selectPanel(id);document.getElementById(id)?.scrollIntoView({block:'start',behavior:'instant'});return;}
     const b=e.target.closest('[data-table],[data-csv],[data-fam],[data-ind],[data-detail],[data-decision],[data-close],[data-page]');if(!b)return;
     if(b.dataset.table){const table=document.getElementById(b.dataset.table+'-table');table.hidden=!table.hidden;b.setAttribute('aria-expanded',String(!table.hidden));b.textContent=table.hidden?'Ver como tabela':'Ocultar tabela';}
     else if(b.dataset.csv)download(b.dataset.csv);

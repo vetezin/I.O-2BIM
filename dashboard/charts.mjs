@@ -7,7 +7,7 @@ const seriesMarker = s => s.name==='TOTAL'?'○':s.color===C.petroleo?'■':s.co
 export function table(headers,rows) {return `<div class="table-scroll"><table><thead><tr>${headers.map(h=>`<th scope="col">${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;}
 export function graph(id,title,headers,rows,viz,note='',scope='') {
   return `<article class="graph" id="${id}" data-graph><div class="graph-head"><h3>${esc(title)}</h3><div class="tools"><button type="button" data-table="${id}" aria-controls="${id}-table" aria-expanded="false">Ver como tabela</button><button type="button" data-csv="${id}">Exportar CSV</button></div></div>${scope?`<p class="scope">${esc(scope)}</p>`:''}
-  <div class="visual">${rows.length?viz:'<p class="empty">nenhum item com esses filtros</p>'}</div><div class="data-table" id="${id}-table" hidden>${table(headers,rows)}</div>${note?`<p class="note">${esc(note)}</p>`:''}</article>`;
+  <div class="visual">${rows.length?viz:'<p class="empty">nenhum item com esses filtros</p>'}</div><div class="data-table" id="${id}-table" hidden>${table(headers,rows)}</div>${note ? (Array.isArray(note) ? note.map(n=>`<p class="note">${esc(n)}</p>`).join('') : `<p class="note">${esc(note)}</p>`) : ''}</article>`;
 }
 export function line(labels,series,{meta=null,height=255,zero=false,shade=[],warming=[],bars=null,rupture=[],sync='',extra=[],ceiling=null}={}) {
   const w=720,h=height,l=62,r=24,t=24,b=40,iw=w-l-r,ih=h-t-b;
@@ -67,7 +67,7 @@ export function dumbbell(rows,intermediate,final,selected) {
   const w=720,left=245,iw=400,h=rows.length*34+44,x=v=>left+v/100*iw;
   let body=[intermediate,final].map(v=>`<path d="M${x(v)} 12V${h-30}" stroke="${C.tinta}" stroke-dasharray="4 3"/>`+text(x(v),h-8,'meta '+num(v,0)+'%','text-anchor="middle"')).join('');
   rows.forEach((r,k)=>{const y=k*34+20;body+=`<g ${tip(r.label+' · anterior '+num(r.previous)+'% · atual '+num(r.value)+'%')} ${selected===r.id?'class="selected"':''}>${text(left-12,y+4,r.label.slice(0,31),'text-anchor="end"')}<path d="M${x(r.previous??0)} ${y}H${x(r.value??0)}" stroke="${C.cinza}"/><circle cx="${x(r.previous??0)}" cy="${y}" r="5" fill="${C.salvia}"/><circle cx="${x(r.value??0)}" cy="${y}" r="5" fill="${C.oliva}" ${selected===r.id?'stroke="var(--tinta)" stroke-width="3"':''}/>${text(x(r.value??0)+8,y-7,num(r.value)+'%')}</g>`;});
-  return '<p class="legend">● Atual (oliva) · ● Anterior (sálvia)</p>'+svg(w,h,body,'OTIF anterior e atual por fornecedor');
+  return '<p class="legend"><span><i style="background:var(--oliva);width:10px;height:10px;border-radius:5px;display:inline-block;margin-right:4px"></i>atual</span> · <span><i style="background:var(--salvia);width:10px;height:10px;border-radius:5px;display:inline-block;margin-right:4px"></i>anterior</span></p>'+svg(w,h,body,'OTIF anterior e atual por fornecedor');
 }
 export function scatter(rows,{xLabel,yLabel,size=true,diagonal=true}={}) {
   const w=720,h=300,l=65,r=35,t=25,b=52,xx=Math.max(1,...rows.map(r=>r.x))*1.15,yy=Math.max(1,...rows.map(r=>r.y))*1.15,upper=diagonal?Math.max(xx,yy):null;
@@ -96,7 +96,7 @@ export function rain(rows,sync) {
     body+=`<rect x="${x(k)+1}" y="${h-b-bh}" width="${Math.max(1,bw-2)}" height="${bh}" fill="${r.semana_completa?color:'none'}" stroke="${color}"/><rect x="${x(k)}" y="${t}" width="${bw}" height="${h-t-b}" fill="transparent" ${tip(date(r.semana_inicio)+': '+num(r.chuva_mm)+' mm · '+r.cenario+' · '+r.n_dias+' dias'+(!r.semana_completa?' · semana parcial':''))} data-sync="${sync}" data-index="${k}"/>`;
     if(k%Math.max(1,Math.ceil(rows.length/7))===0)body+=text(x(k)+bw/2,h-12,date(r.semana_inicio),'text-anchor="middle"');});
   body+=text(8,18,'Chuva (mm)')+text(8,42,num(max))+`<path d="M${l} ${h-b}H${w-r}" stroke="${C.cinza}"/>`;
-  return '<p class="legend">■ chuvoso (petróleo) · ■ seco (terra) · ■ normal (cinza) · □ parcial</p>'+svg(w,h,body,'Chuva semanal com semanas parciais vazadas');
+  return '<p class="legend"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--petroleo);margin-right:4px"></span>chuvoso · <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--terra);margin-right:4px"></span>seco · <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--cinza);margin-right:4px"></span>normal · <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--fundo);margin-right:4px"></span>parcial</p>'+svg(w,h,body,'Chuva semanal com semanas parciais vazadas');
 }
 export function stacked(rows,meta) {
   const w=850,left=235,iw=320,pctLeft=665,pctWidth=95,h=rows.length*43+78,maxItems=Math.max(1,...rows.map(r=>r.itens));

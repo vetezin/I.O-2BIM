@@ -4,7 +4,7 @@ Protótipo acadêmico com dados fictícios. HTML, CSS, JavaScript e base simulad
 
 ## Nova aba Dashboard
 
-Abra `dashboard.html` pelo menu. A aba usa exclusivamente `dashboard/dados_alcar.json` do contrato DW, com seis painéis, filtros conforme a matriz do guia, exportação CSV, visão tabular, simulação de nível de serviço e decisões persistidas localmente. Home, Compras e Decisões preservam o protótipo anterior.
+Abra `dashboard.html` pelo menu. A aba usa exclusivamente `dashboard/dados_alcar.json` do contrato DW, com seis painéis, filtros conforme a matriz do guia (recolhíveis, com contagem de ativos), exportação CSV, visão tabular, simulação de nível de serviço e decisões persistidas localmente. Os cartões do Painel 1 têm botão "i" com a fórmula do indicador; um glossário de símbolos (● dentro · ◆ fora · ▲ melhora · ▼ piora · ■ estável) fica abaixo dos filtros. Home, Compras e Decisões preservam o protótipo anterior.
 
 Especificação em `docs/dashboard/GUIA_DASHBOARD_SAD.md`; resultados, limitações do contrato e respostas às perguntas finais em `docs/dashboard/VALIDACAO.md`.
 

@@ -4,6 +4,8 @@ import {graph,table} from './charts.mjs';
 let D,F,items,decisions=[],memoryOnly=false,lastFocus=null,activePanel='painel-1';
 const $=s=>document.querySelector(s);
 const storage=()=>{try{return window.localStorage;}catch{return undefined;}};
+let filtersOpen=true;
+const activeFilters=()=>{const d=core.defaults(D);return ['fam','janela','agricola','forn','abc','risco','padrao','nivel'].filter(k=>F[k]!==d[k]).length;};
 const sel=(id,label,options,value)=>`<label for="${id}">${label}<select id="${id}">${options.map(([v,l])=>`<option value="${core.esc(v)}" ${String(v)===String(value)?'selected':''}>${core.esc(l)}</option>`).join('')}</select></label>`;
 function focusSelector(el=document.activeElement) {
   if(!el?.closest('#dashboard,#filters'))return null;
@@ -27,8 +29,8 @@ function fromHash() {
   return base;
 }
 function filters() {
-  const focus=focusSelector();
-  $('#filters').innerHTML=`<div class="wrap"><div class="filter-grid">${sel('fam','Família',[['TOTAL','Todas (empresa)'],...D.familias.map(f=>[f.id,f.nome])],F.fam)}${sel('janela','Janela',[['ATUAL',`Atual (${D.meta.parametros.janela_semanas} semanas)`],['ANTERIOR',`Anterior (${D.meta.parametros.janela_semanas} semanas)`],['ANO',`Ano (${D.semanas.length} semanas)`]],F.janela)}${sel('agricola','Período agrícola',[['','Todos'],['safra','Safra'],['entre','Entressafra']],F.agricola)}${sel('forn','Fornecedor',[['','Todos'],...D.fornecedores.map(f=>[f.id,f.nome])],F.forn)}${sel('abc','Curva ABC',[['','Todas'],['A','A'],['B','B'],['C','C']],F.abc)}${sel('risco','Risco',[['','Todos'],['crítico','◆ crítico'],['atenção','▲ atenção'],['sem risco','● sem risco']],F.risco)}${sel('padrao','Padrão de demanda',[['','Todos'],['suave','Suave'],['intermitente','Intermitente']],F.padrao)}<label for="nivel">Nível de serviço (what-if): <output id="nivel-value">${core.num(F.nivel)}%</output><input id="nivel" type="range" min="90" max="99.5" step="0.5" value="${F.nivel}"></label></div><div class="filter-bottom"><button id="reset">Limpar filtros</button><span id="filter-summary">${core.weeks(D,F).length} semanas · posição ${core.date(D.meta.data_posicao)} · <a href="#painel-1">Voltar aos indicadores</a></span>${sel('perfil','Perfil da decisão',[['analista','Analista'],['compras','Compras'],['gestor','Gestor']],F.perfil)}</div></div>`;
+  const focus=focusSelector(),active=activeFilters();
+  $('#filters').innerHTML=`<div class="wrap"><button id="filters-toggle" type="button" aria-expanded="${filtersOpen}" aria-controls="filters-body">Filtros <span id="filters-count">(${active} ativo${active===1?'':'s'})</span></button><div id="filters-body" ${filtersOpen?'':'hidden'}><div class="filter-grid">${sel('fam','Família',[['TOTAL','Todas (empresa)'],...D.familias.map(f=>[f.id,f.nome])],F.fam)}${sel('janela','Janela',[['ATUAL',`Atual (${D.meta.parametros.janela_semanas} semanas)`],['ANTERIOR',`Anterior (${D.meta.parametros.janela_semanas} semanas)`],['ANO',`Ano (${D.semanas.length} semanas)`]],F.janela)}${sel('agricola','Período agrícola',[['','Todos'],['safra','Safra'],['entre','Entressafra']],F.agricola)}${sel('forn','Fornecedor',[['','Todos'],...D.fornecedores.map(f=>[f.id,f.nome])],F.forn)}${sel('abc','Curva ABC',[['','Todas'],['A','A'],['B','B'],['C','C']],F.abc)}${sel('risco','Risco',[['','Todos'],['crítico','◆ crítico'],['atenção','▲ atenção'],['sem risco','● sem risco']],F.risco)}${sel('padrao','Padrão de demanda',[['','Todos'],['suave','Suave'],['intermitente','Intermitente']],F.padrao)}<label for="nivel">Nível de serviço (what-if): <output id="nivel-value">${core.num(F.nivel)}%</output><input id="nivel" type="range" min="90" max="99.5" step="0.5" value="${F.nivel}"></label></div><div class="filter-bottom"><button id="reset">Limpar filtros</button><span id="filter-summary">${core.weeks(D,F).length} semanas · posição ${core.date(D.meta.data_posicao)} · <a href="#painel-1">Voltar aos indicadores</a></span>${sel('perfil','Perfil da decisão',[['analista','Analista'],['compras','Compras'],['gestor','Gestor']],F.perfil)}</div></div></div>`;
   restoreFocus(focus);
 }
 function render() {
@@ -48,6 +50,7 @@ function render() {
   const params=new URLSearchParams();for(const k of ['fam','janela','agricola','forn','abc','risco','padrao','nivel','indicador'])if(F[k]!==''&&F[k]!=null)params.set(k,F[k]);
   history.replaceState(null,'','#'+params);
   $('#filter-summary').innerHTML=`${core.weeks(D,F).length} semanas · posição ${core.date(D.meta.data_posicao)} · <a href="#painel-1">Voltar aos indicadores</a>`;
+  const count=$('#filters-count');if(count){const a=activeFilters();count.textContent=`(${a} ativo${a===1?'':'s'})`;}
   if(memoryOnly)$('#message').textContent='Armazenamento indisponível: decisões mantidas em memória nesta aba.';
   restoreFocus(focus);
 }
@@ -96,7 +99,7 @@ function events() {
     });
   },{passive:true});
   $('#filters').addEventListener('change',e=>{const k=e.target.id;if(!(k in F))return;F[k]=k==='nivel'?Number(e.target.value):e.target.value;F.page=0;if(k==='nivel')$('#nivel-value').textContent=core.num(F.nivel)+'%';render();});
-  $('#filters').addEventListener('click',e=>{if(e.target.closest('#reset')){F=core.defaults(D);filters();render();}});
+  $('#filters').addEventListener('click',e=>{if(e.target.closest('#filters-toggle')){filtersOpen=!filtersOpen;$('#filters-body').hidden=!filtersOpen;$('#filters-toggle').setAttribute('aria-expanded',String(filtersOpen));}else if(e.target.closest('#reset')){F=core.defaults(D);filters();render();}});
   $('#dashboard').addEventListener('change',e=>{if(e.target.id==='indicador')F.indicador=e.target.value;else if(e.target.id==='item')F.item=e.target.value;else if(e.target.id==='pareto')F.pareto=e.target.value;else return;render();});
   document.addEventListener('click',e=>{
     const anchor=e.target.closest('a[href^="#painel-"]');
@@ -122,6 +125,5 @@ function events() {
 }
 export async function init() {
   try{const response=await fetch('dashboard/dados_alcar.json',{signal:AbortSignal.timeout(15000)});if(!response.ok)throw Error('HTTP '+response.status);D=core.validate(await response.json());F=fromHash();decisions=core.readDecisions(D,storage());D.decisoes=decisions;
-    filters();render();events();$('#filters').hidden=false;$('#dashboard').hidden=false;$('#loading').hidden=true;
-  }catch(e){const reason=e.name==='TimeoutError'?'o servidor não respondeu em 15 segundos. Verifique a conexão e tente novamente':e.message;$('#loading').innerHTML=`<p role="alert">Não foi possível carregar o Dashboard: ${core.esc(reason)}.</p><button id="retry">Tentar novamente</button>`;$('#retry').onclick=()=>location.reload();}
+    filtersOpen=innerWidth>=850;filters();render();events();$('#filters').hidden=false;$('#dashboard').hidden=false;$('#loading').hidden=true;  }catch(e){const reason=e.name==='TimeoutError'?'o servidor não respondeu em 15 segundos. Verifique a conexão e tente novamente':e.message;$('#loading').innerHTML=`<p role="alert">Não foi possível carregar o Dashboard: ${core.esc(reason)}.</p><button id="retry">Tentar novamente</button>`;$('#retry').onclick=()=>location.reload();}
 }

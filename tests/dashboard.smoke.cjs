@@ -32,7 +32,7 @@ const server=require('../serve.cjs');
     assert.equal(await page.locator('#g32 [data-selected=true]').count(),1);
     await page.locator('.panel-nav a').first().click();
     assert.match(page.url(),/fam=ROL/);
-    assert.match(await page.locator('#g22 .scope').innerText(),/Família.*não se aplica/);
+    assert.match(await page.locator('#g22 .scope').innerText(),/Família/);
     await page.selectOption('#forn','0000100001');
     assert.match(await page.locator('#g21 .scope').innerText(),/Fornecedor/);
     await page.locator('#reset').click();

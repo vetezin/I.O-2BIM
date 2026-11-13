@@ -53,9 +53,19 @@ const server=require('../serve.cjs');
     await page.locator('#filters-toggle').click();
     assert.equal(await page.locator('#filters-body').evaluate(el=>el.hidden),false);
 
+    // P3: avisos de origem DW vão para o tooltip da linha de escopo
+    await page.selectOption('#janela','ANO');
+    await page.locator('#g22 .scope[data-tip]').focus();
+    assert.match(await page.locator('#tooltip').innerText(),/contrato do DW/);
+    assert.doesNotMatch(await page.locator('#g22 .note').innerText(),/contrato/);
+    assert.match(await page.locator('#g23 .scope[data-tip]').getAttribute('data-tip'),/duas janelas/);
+    assert.doesNotMatch(await page.locator('#g23 .note').innerText(),/não é agregado/);
+    assert.match(await page.locator('#g24 .scope[data-tip]').getAttribute('data-tip'),/exibindo/);
+    assert.doesNotMatch(await page.locator('#g24 .note').innerText(),/Sem agregado anual/);
+    await page.locator('#reset').click();
+
     // P6: resumo textual oculto no desktop, visível no celular
-    assert.equal(await page.locator('.chart-summary').count(),4);
-    for(const el of await page.locator('.chart-summary').all())assert.equal(await el.evaluate(n=>getComputedStyle(n).display),'none');
+    assert.equal(await page.locator('.chart-summary').count(),4);    for(const el of await page.locator('.chart-summary').all())assert.equal(await el.evaluate(n=>getComputedStyle(n).display),'none');
     await page.setViewportSize({width:390,height:844});
     const visible=await page.locator('.chart-summary').first().evaluate(n=>getComputedStyle(n).display);
     assert.equal(visible,'block');
